@@ -1,9 +1,13 @@
-import koa from 'koa';
+import express from 'express'
 
-const app = koa();
+import routes from './routes'
 
-app.use(function *() {
-  this.body = 'Hello World';
-});
+const port = 3001
 
-app.listen(3001);
+const app = express()
+
+app.use('/', routes)
+
+app.listen(port, () => {
+  console.log(`rotate.cc back-end is listening on port ${port}`)
+})

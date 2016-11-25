@@ -2,7 +2,7 @@
   "name": "back",
   "version": "0.1.0",
   "description": "rotate.cc back-end",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
     "start": "node app/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/rotatecc/back#readme",
   "dependencies": {
-    "koa": "^1.2.4"
+    "express": "^4.14.0",
+    "knex": "^0.12.6",
+    "pg": "^6.1.0"
   },
   "devDependencies": {
     "babel-polyfill": "^6.16.0",
