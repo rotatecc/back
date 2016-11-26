@@ -6,8 +6,15 @@ r.get('/', (req, res) => {
   res.send('rotate.cc api v1')
 })
 
-r.get('/test', (req, res) => {
-  res.send('the test works')
+// Require and mount sub-routers for each endpoint
+
+const endpoints = [
+  'auth',
+  // 'account'
+]
+
+endpoints.forEach((endpoint) => {
+  r.use(`/${endpoint}`, require(`./${endpoint}`).default)
 })
 
 export default r
