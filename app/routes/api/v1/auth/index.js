@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import queries from './queries'
+import queries from '../account/queries'
 
 const r = Router()
 

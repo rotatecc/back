@@ -10,7 +10,7 @@ r.get('/', (req, res) => {
 
 const endpoints = [
   'auth',
-  // 'account'
+  'account'
 ]
 
 endpoints.forEach((endpoint) => {
