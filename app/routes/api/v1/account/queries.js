@@ -9,7 +9,11 @@ export function find(id) {
     .from(config.tables.account)
     .where({ id })
     .then((results) => {
-      return results.length === 1 ? results[0] : null
+      if (results.length === 1) {
+        return results[0]
+      }
+
+      return Promise.reject(new ApiError(404))
     })
 }
 

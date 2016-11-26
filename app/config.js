@@ -14,4 +14,11 @@ config.tables = {
   account: 'account'
 }
 
+config.standardHttpStatusCodes = {
+  // TODO
+  400: 'Bad Request',
+  404: 'Not Found',
+  500: 'Internal Server Error'
+}
+
 export default config

@@ -13,4 +13,11 @@ r.get('/test', (req, res) => {
     .catch(stdErrorResponse(res))
 })
 
+r.get('/:id', (req, res) => {
+  queries
+    .find(req.params.id)
+    .then(stdResponse(res))
+    .catch(stdErrorResponse(res))
+})
+
 export default r

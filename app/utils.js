@@ -29,7 +29,7 @@ export function jsonResponse(success, dataOrErrorCode, errorMessageMaybe) {
     success: false,
     error: {
       code: dataOrErrorCode,
-      message: errorMessageMaybe || ""
+      message: errorMessageMaybe || config.standardHttpStatusCodes[dataOrErrorCode] || "Unknown error"
     }
   }
 }
