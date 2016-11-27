@@ -105,10 +105,3 @@ export function makeSingleOrReject(results) {
 
   return Promise.reject(new ApiError(404))
 }
-
-
-export default {
-  jsonResponse,
-  stdResponse,
-  stdErrorResponse
-}
