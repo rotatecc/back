@@ -1,23 +1,18 @@
 import { Router } from 'express'
+import validator from 'validator'
 
-import { stdResponse, stdErrorResponse } from '../../../../utils'
+import { ApiError, makePromiseHandler } from '../../../../utils'
 import queries from './queries'
 
 
 const r = Router()
 
-r.get('/test', (req, res) => {
-  queries
-    .get(20, 0)
-    .then(stdResponse(res))
-    .catch(stdErrorResponse(res))
-})
+r.get('/:id', makePromiseHandler((req) => {
+  if (!validator.isInt(req.params.id)) {
+    return Promise.reject(new ApiError(400, 'Bad id'))
+  }
 
-r.get('/:id', (req, res) => {
-  queries
-    .find(req.params.id)
-    .then(stdResponse(res))
-    .catch(stdErrorResponse(res))
-})
+  return queries.find(validator.toInt(req.params.id))
+}))
 
 export default r

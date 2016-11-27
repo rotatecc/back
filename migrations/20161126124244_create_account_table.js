@@ -7,6 +7,7 @@ exports.up = function(knex, Promise) {
     table.string('display')
     table.string('password')
     table.dateTime('last_login')
+    table.boolean('status')
     table.timestamps()
   })
 }

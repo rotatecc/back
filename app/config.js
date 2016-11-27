@@ -21,4 +21,6 @@ config.standardHttpStatusCodes = {
   500: 'Internal Server Error'
 }
 
+config.bcryptSaltRounds = 10
+
 export default config

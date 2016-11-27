@@ -18,10 +18,12 @@
   },
   "homepage": "https://github.com/rotatecc/back#readme",
   "dependencies": {
+    "bcrypt": "^0.8.7",
     "express": "^4.14.0",
     "knex": "^0.12.6",
     "passport": "^0.3.2",
-    "pg": "^6.1.0"
+    "pg": "^6.1.0",
+    "validator": "^6.1.0"
   },
   "devDependencies": {
     "babel-polyfill": "^6.16.0",

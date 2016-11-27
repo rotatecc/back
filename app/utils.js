@@ -2,6 +2,7 @@
  * Utils / misc
  */
 
+import bcrypt from 'bcrypt'
 
 import config from './config'
 
@@ -50,15 +51,59 @@ export function stdErrorResponse(res) {
     } else if (err instanceof Error) {
       // Error is thrown by Knex directly, so it's safe to
       // say it is a 500 (internal server error).
+
       // Only print message if development, since it
-      // could contain the raw SQL query.
+      // could contain a raw SQL query or something.
+      const message = config.isDevelopment
+        ? `DEV ERROR: ${err.message}`
+        : 'Internal server error'
+
       res.status(500)
-      res.json(jsonResponse(false, 500, config.isDevelopment ? err.message : 'Internal Server Error'))
+      res.json(jsonResponse(false, 500, message))
     } else {
       res.status(500)
-      res.json(jsonResponse(false, 500, 'Error unknown'))
+      res.json(jsonResponse(false, 500, 'Unknown error'))
     }
   }
+}
+
+
+export function makePromiseHandler(handler) {
+  return (req, res, next) => {
+    handler(req, res, next)
+      .then(stdResponse(res))
+      .catch(stdErrorResponse(res))
+  }
+}
+
+
+export function hash(password) {
+  // promise-ify bcrypt hash
+
+  return new Promise((resolve, reject) => {
+    bcrypt.hash(password, config.bcryptSaltRounds, function(err, hash) {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(hash)
+      }
+    })
+  })
+}
+
+
+/**
+ * Ensure results has only one entry, then forward it.
+ * If not, reject promise with a 404.
+ *
+ * Usage: new Promise(...).then(singleOrReject)
+ */
+export function makeSingleOrReject(results) {
+  if (results.length === 1) {
+    return results[0]
+  }
+
+  return Promise.reject(new ApiError(404))
 }
 
 
