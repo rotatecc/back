@@ -6,7 +6,7 @@ import { ApiError, makeSingleOrReject, hash } from '../../../../utils'
 export function create(fields) {
   return hash(fields.password)
     .catch((err) => {
-      return Promise.reject(new Error(500, `Password hashing failed: ${err.message}`))
+      return Promise.reject(new ApiError(500, `Password hashing failed: ${err.message}`))
     })
     .then((passwordHashed) => {
       const finalFields = Object.assign({}, fields, {
