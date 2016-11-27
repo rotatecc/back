@@ -3,6 +3,7 @@
  */
 
 import bcrypt from 'bcrypt'
+import Joi from 'joi'
 
 import config from './config'
 
@@ -48,6 +49,14 @@ export function stdErrorResponse(res) {
     if (err instanceof ApiError) {
       res.status(err.code)
       res.json(jsonResponse(false, err.code, err.message))
+    } else if (err instanceof Error && err.isJoi) {
+      // Error is a Joi validation error, so the user is at fault
+
+      // Map (potentially multiple) details to their messages
+      const detailMessages = err.details.map((detail) => detail.message)
+
+      res.status(400)
+      res.json(jsonResponse(false, 400, `Validation error: ${detailMessages.join(', ')}`))
     } else if (err instanceof Error) {
       // Error is thrown by Knex directly, so it's safe to
       // say it is a 500 (internal server error).
@@ -104,4 +113,29 @@ export function makeSingleOrReject(results) {
   }
 
   return Promise.reject(new ApiError(404))
+}
+
+
+/**
+ * Use Joi to validate data with a schema,
+ * returns a Promise
+ */
+export function validate(schema, data) {
+  return new Promise((resolve, reject) => {
+    Joi.validate(data, schema, (err, value) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(value)
+      }
+    })
+  })
+}
+
+
+export function reqWithId(req) {
+  return validate(Joi.number().integer().positive(), req.params.id)
+    .catch(err => {
+      return Promise.reject(new ApiError(400, 'Bad id'))
+    })
 }

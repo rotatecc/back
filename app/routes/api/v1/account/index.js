@@ -1,18 +1,30 @@
 import { Router } from 'express'
-import validator from 'validator'
+import Joi from 'joi'
 
-import { ApiError, makePromiseHandler } from '../../../../utils'
+import { ApiError, makePromiseHandler, validate, reqWithId } from '../../../../utils'
 import queries from './queries'
 
 
 const r = Router()
 
 r.get('/:id', makePromiseHandler((req) => {
-  if (!validator.isInt(req.params.id)) {
-    return Promise.reject(new ApiError(400, 'Bad id'))
-  }
+  return reqWithId(req)
+  .then(() => {
+    return queries.find(parseInt(req.params.id, 10))
+  })
+}))
 
-  return queries.find(validator.toInt(req.params.id))
+r.put('/:id', makePromiseHandler((req) => {
+  return reqWithId(req)
+  .then(() => {
+    return validate({
+      email: Joi.string().email(),
+      display: Joi.string().trim().min(3)
+    }, req.body)
+  })
+  .then((body) => {
+    return queries.update(parseInt(req.params.id, 10), body)
+  })
 }))
 
 export default r

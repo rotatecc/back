@@ -33,6 +33,8 @@ export function update(id, fields) {
   return db(config.tables.account)
     .where('id', id)
     .update(fields)
+    .returning('*')
+    .then(makeSingleOrReject)
 }
 
 
