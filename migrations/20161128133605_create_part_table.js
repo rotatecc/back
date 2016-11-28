@@ -6,7 +6,7 @@ exports.up = function(knex, Promise) {
     table.string('manu_id')
     table.text('manu_description')
     table.text('our_note')
-    table.date('release_date')
+    table.date('date_released')
     table.timestamps()
 
     // belongsTo PType
