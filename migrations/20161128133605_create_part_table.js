@@ -8,6 +8,14 @@ exports.up = function(knex, Promise) {
     table.text('our_note')
     table.date('release_date')
     table.timestamps()
+
+    // belongsTo PType
+    table.integer('ptype_id').unsigned()
+    table.foreign('ptype_id').references('id').inTable('ptype')
+
+    // belongsTo Brand
+    table.integer('brand_id').unsigned()
+    table.foreign('brand_id').references('id').inTable('brand')
   })
 }
 

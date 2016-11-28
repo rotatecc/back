@@ -5,6 +5,10 @@ exports.up = function(knex, Promise) {
     table.string('name')
     table.text('description')
     table.timestamps()
+
+    // belongsTo Account
+    table.integer('account_id').unsigned()
+    table.foreign('account_id').references('id').inTable('account')
   })
 }
 

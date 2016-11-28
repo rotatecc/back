@@ -6,6 +6,10 @@ exports.up = function(knex, Promise) {
     table.text('content')
     table.enu('modstatus', ['non', 'approve', 'reject'])
     table.timestamps()
+
+    // belongsTo Account
+    table.integer('account_id').unsigned()
+    table.foreign('account_id').references('id').inTable('account')
   })
 }
 

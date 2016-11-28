@@ -9,6 +9,14 @@ exports.up = function(knex, Promise) {
     table.dateTime('last_login')
     table.boolean('status')
     table.timestamps()
+
+    // belongsTo Role
+    table.integer('role_id').unsigned()
+    table.foreign('role_id').references('id').inTable('role')
+
+    // belongsTo Status
+    table.integer('status_id').unsigned()
+    table.foreign('status_id').references('id').inTable('status')
   })
 }
 
