@@ -134,8 +134,16 @@ export function validate(schema, data) {
 
 
 export function reqWithId(req) {
-  return validate(Joi.number().integer().positive(), req.params.id)
+  return validate(Joi.number().integer().positive().required(), req.params.id)
     .catch(err => {
       return Promise.reject(new ApiError(400, 'Bad id'))
+    })
+}
+
+
+export function reqWithPage(req) {
+  return validate(Joi.number().integer().positive().required(), req.query.page)
+    .catch(err => {
+      return Promise.reject(new ApiError(400, 'Bad page'))
     })
 }
