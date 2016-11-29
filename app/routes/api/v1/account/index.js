@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import Joi from 'joi'
+import _ from 'lodash'
 
 import { ApiError, makePromiseHandler, validate, reqWithId, hash } from '../../../../utils'
 import queries from './queries'
+import schema from './schema'
 
 
 const r = Router()
@@ -14,13 +15,10 @@ r.get('/:id', makePromiseHandler((req) => {
   })
 }))
 
-r.put('/:id', makePromiseHandler((req) => {
+r.patch('/:id', makePromiseHandler((req) => {
   return reqWithId(req)
   .then(() => {
-    return validate({
-      email: Joi.string().email(),
-      display: Joi.string().trim().min(3)
-    }, req.body)
+    return validate(_.pick(schema, ['email', 'display']), req.body)
   })
   .then((body) => {
     // TODO validate body has at least one field
@@ -31,10 +29,7 @@ r.put('/:id', makePromiseHandler((req) => {
 r.put('/password/:id', makePromiseHandler((req) => {
   return reqWithId(req)
   .then(() => {
-    return validate({
-      password: Joi.string().min(7).required(),
-      password_confirmation: Joi.any().strip().valid(Joi.ref('password')).required().options({ language: { any: { allowOnly: 'Passwords must match' } } })
-    }, req.body)
+    return validate(_.pick(schema, ['password', 'password_confirmation']), req.body)
   })
   .then(({ password }) => {
     return hash(password)
