@@ -1,10 +1,3 @@
-require('babel-register')({
-  presets: [
-    'es2015',
-    'stage-0',
-  ]
-});
+require('./setup-babel')
 
-require('babel-polyfill');
-
-require('./app.js');
+require('./app.js')
