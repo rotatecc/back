@@ -90,6 +90,8 @@ export default function makeResource({ config, endpoints }) {
       .then((bodyMaybe) => {
         const idMaybe = req.params.id && parseInt(req.params.id, 10)
 
+        const returning = ep.returning || config.stdReturning || ['id']
+
         if (ep.method === methods.HEAD) {
           // HEAD
           ////////////////////////
@@ -101,17 +103,17 @@ export default function makeResource({ config, endpoints }) {
 
           if (ep.getType === 'all') {
             return db
-              .select(ep.returning)
+              .select(returning)
               .from(config.table)
           } else if (ep.getType === 'paginate') {
             return db
-              .select(ep.returning)
+              .select(returning)
               .from(config.table)
               .limit(2) // TODO
               .offset(0) // TODO
           } else if (ep.getType === 'single') {
             return db
-              .select(ep.returning)
+              .select(returning)
               .from(config.table)
               .where({ id: idMaybe })
               .then(makeSingleOrReject)
@@ -128,7 +130,7 @@ export default function makeResource({ config, endpoints }) {
           return db(config.table)
             .where('id', idMaybe)
             .update(bodyMaybe)
-            .returning(ep.returning)
+            .returning(returning)
             .then(makeSingleOrReject)
         } else if (ep.method === methods.DELETE) {
           // DELETE

@@ -3,26 +3,30 @@ import { hash } from '../../../../utils'
 
 import schema from './schema'
 
-
 export default makeResource({
   config: {
     table: 'account',
-    schema
+    schema,
+    stdReturning: [
+      'id',
+      'email',
+      'display',
+      'last_login',
+      'created_at',
+      'updated_at'
+    ]
   },
   endpoints: [
     {
       method: methods.GET,
       getType: 'single',
-      returning: '*', // NOTE remove pw
     },
     {
       method: methods.GET,
       getType: 'paginate',
-      returning: '*', // NOTE remove pw
     },
     {
       method: methods.PATCH,
-      returning: '*', // NOTE remove pw
       pickSchema: ['email', 'display'],
     },
     {

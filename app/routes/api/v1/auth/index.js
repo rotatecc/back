@@ -1,7 +1,5 @@
 import { Router } from 'express'
 
-import queries from '../account/queries'
-
 const r = Router()
 
 r.post('/register', (req, res) => {
