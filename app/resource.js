@@ -9,7 +9,8 @@ import {
   reqWithId,
   reqWithPage,
   hash,
-  makeSingleOrReject
+  makeSingleOrReject,
+  verifyAuthRole
 } from './utils'
 
 
@@ -47,10 +48,14 @@ export default function makeResource({ config, endpoints }) {
     const path = (requiresId ? '/:id' : '') + (ep.suffix || '')
 
     r[ep.method](path, makePromiseHandler((req) => {
-      // TODO check roles
       // TODO check mustOwn
 
       return Promise.resolve()
+      .then(() => {
+        // check auth + role
+
+        return verifyAuthRole(req, ep.roles)
+      })
       .then(() => {
         if (requiresId) {
           return reqWithId(req)
@@ -88,9 +93,14 @@ export default function makeResource({ config, endpoints }) {
         return Promise.resolve()
       })
       .then((bodyMaybe) => {
+        // Endpoint can override the default database calls
+        if (ep.overrideResponse) {
+          return ep.overrideResponse(bodyMaybe)
+        }
+
         const idMaybe = req.params.id && parseInt(req.params.id, 10)
 
-        const returning = ep.returning || config.stdReturning || ['id']
+        const returning = ep.returning || config.defaultReturning || ['id']
 
         if (ep.method === methods.HEAD) {
           // HEAD

@@ -1,21 +1,31 @@
-import { Router } from 'express'
+import makeResource, { methods } from '../../../../resource'
+import { authenticate } from '../../../../utils'
 
-const r = Router()
+import schema from '../account/schema'
 
-r.post('/register', (req, res) => {
-  res.send('register')
+
+export default makeResource({
+  config: {
+    table: 'account',
+    schema,
+    defaultReturning: [
+      'id',
+      'email',
+      'display',
+      'last_login',
+      'created_at',
+      'updated_at'
+    ]
+  },
+  endpoints: [
+    {
+      suffix: '/login',
+      roles: false,
+      method: methods.POST,
+      pickSchema: ['email', 'password_login'],
+      overrideResponse: ({ email, password_login }) => {
+        return authenticate(email, password_login)
+      }
+    }
+  ]
 })
-
-r.post('/login', (req, res) => {
-  res.send('login')
-})
-
-r.post('/logout', (req, res) => {
-  res.send('logout')
-})
-
-r.get('/user', (req, res) => {
-  res.send('user info')
-})
-
-export default r

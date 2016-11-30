@@ -7,7 +7,7 @@ export default makeResource({
   config: {
     table: 'account',
     schema,
-    stdReturning: [
+    defaultReturning: [
       'id',
       'email',
       'display',

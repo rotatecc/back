@@ -2,10 +2,13 @@
  * Utils / misc
  */
 
+import _ from 'lodash'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import Joi from 'joi'
 
 import config from './config'
+import db from './db'
 
 
 export class ApiError {
@@ -146,4 +149,97 @@ export function reqWithPage(req) {
     .catch(err => {
       return Promise.reject(new ApiError(400, 'Bad page'))
     })
+}
+
+
+export function authenticate(email, password) {
+  const jwtOptions = {
+    algorithm: 'HS256' // TODO replace with RS256 + .pem file
+  }
+
+  const badUserError = new ApiError(401, 'bad email or password')
+
+  // find user
+
+  return db
+  .select(['id', 'email', 'display', 'password'])
+  .from('account')
+  .where({ email })
+  .then(makeSingleOrReject)
+  // 404 errors would reveal the user doesn't exist,
+  // but we want to be ambiguous and give the
+  // same error as giving a bad password:
+  .catch(() => Promise.reject(badUserError))
+  .then((user) => {
+    // verify password
+
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (err) {
+          return Promise.reject(new ApiError(500, 'Password hashing failed'))
+        }
+
+        if (!res) {
+          // bad password
+          return reject(badUserError)
+        }
+
+        // continue with user obj, omitting the password entry
+        return resolve(_.omit(user, ['password']))
+      })
+    })
+  })
+  .then((user) => {
+    return new Promise((resolve, reject) => {
+      jwt.sign(user, config.jwtSecret, jwtOptions, (err, token) => {
+        if (err) {
+          // we're at fault
+          reject(new ApiError(500, 'could not sign token'))
+        }
+
+        resolve(token)
+      })
+    })
+  })
+}
+
+
+export function verifyAuthRole(req, roleSlugs) {
+  if (roleSlugs === false) {
+    return Promise.resolve()
+  }
+
+  const token = req.headers['x-access-token']
+
+  if (!token) {
+    return Promise.reject(new ApiError(401, 'Auth token not supplied'))
+  }
+
+  // if roleSlugs wasn't an array, put its value in an array
+  const roleSlugsFinal = _.isArray(roleSlugs) ? roleSlugs : [roleSlugs]
+
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, config.jwtSecret, (err, decoded) => {
+      if (err) {
+        if (err.name === 'TokenExpiredError') {
+          // NOTE 440 isn't a standard response code,
+          // defined by Microsoft, means login expiration
+          reject(new ApiError(440, 'Auth token expired'))
+        }
+
+        // This is a JsonWebTokenError (jwt malformed, bad signature, etc)
+        reject(new ApiError(401, err.message))
+      }
+
+      // TODO uncomment role checking
+      // // jwt is good, now for the role...
+      // if (roleSlugs.includes(decoded.roleSlug)) {
+      //   // send 403 forbidden (authenticated, but forbidden)
+      //   reject(new ApiError(403, 'forbidden'))
+      // }
+
+      // all set, resolve with the payload
+      resolve(decoded)
+    })
+  })
 }

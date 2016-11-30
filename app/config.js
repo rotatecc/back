@@ -10,6 +10,8 @@ config.env = process.env.NODE_ENV || 'production'
 
 config.isDevelopment = config.env === 'development'
 
+config.jwtSecret = 'secret' // TODO
+
 config.tables = {
   account: 'account'
 }
