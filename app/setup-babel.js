@@ -3,6 +3,6 @@ require('babel-register')({
     'es2015',
     'stage-0',
   ]
-});
+})
 
-require('babel-polyfill');
+require('babel-polyfill')

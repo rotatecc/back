@@ -19,6 +19,6 @@ export default bs.model('Photo', bs.Model.extend({
   }
 
   comments() {
-    return this.morphMany('Comment', 'commentable');
+    return this.morphMany('Comment', 'commentable')
   }
 }))

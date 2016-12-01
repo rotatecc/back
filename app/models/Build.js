@@ -23,6 +23,6 @@ export default bs.model('Build', bs.Model.extend({
   }
 
   comments() {
-    return this.morphMany('Comment', 'commentable');
+    return this.morphMany('Comment', 'commentable')
   }
 }))

@@ -29,7 +29,7 @@ export default bs.model('Part', bs.Model.extend({
   }
 
   comments() {
-    return this.morphMany('Comment', 'commentable');
+    return this.morphMany('Comment', 'commentable')
   }
 
   reviews() {
