@@ -4,9 +4,9 @@ import { bs } from '../db'
 import Role from './Role'
 import Status from './Status'
 import Build from './Build'
-// import Comment from './Comment'
-// import Photo from './Photo'
-// import Review from './Review'
+import Comment from './Comment'
+import Photo from './Photo'
+import Review from './Review'
 
 export default bs.model('Account', bs.Model.extend({
   tableName: 'account',
@@ -24,15 +24,15 @@ export default bs.model('Account', bs.Model.extend({
     return this.hasMany('Build')
   }
 
-  // comments() {
-  //   return this.hasMany('Comment')
-  // }
-  //
-  // photos() {
-  //   return this.hasMany('Photo')
-  // }
-  //
-  // reviews() {
-  //   return this.hasMany('Review')
-  // }
+  comments() {
+    return this.hasMany('Comment')
+  }
+
+  photos() {
+    return this.hasMany('Photo')
+  }
+
+  reviews() {
+    return this.hasMany('Review')
+  }
 }))
