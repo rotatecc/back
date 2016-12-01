@@ -8,10 +8,10 @@ export default bs.model('Spec', bs.Model.extend({
   tableName: 'spec',
 
   parts() {
-    return this.belongsToMany('Part').withPivot(['value'])
+    return this.belongsToMany('Part', 'junction_part_spec').withPivot(['value'])
   }
 
   pvariations() {
-    return this.belongsToMany('PVariation').withPivot(['value'])
+    return this.belongsToMany('PVariation', 'junction_pvariation_spec').withPivot(['value'])
   }
 }))

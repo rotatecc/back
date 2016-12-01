@@ -18,6 +18,6 @@ export default bs.model('BVariation', bs.Model.extend({
   }
 
   pvariations() {
-    return this.belongsToMany('PVariation')
+    return this.belongsToMany('PVariation', 'junction_bvariation_pvariation')
   }
 }))

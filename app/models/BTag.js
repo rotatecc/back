@@ -7,6 +7,6 @@ export default bs.model('BTag', bs.Model.extend({
   tableName: 'btag',
 
   builds() {
-    return this.belongsToMany('Build')
+    return this.belongsToMany('Build', 'junction_btag_build')
   }
 }))

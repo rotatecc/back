@@ -19,7 +19,7 @@ export default bs.model('Part', bs.Model.extend({
   }
 
   specs() {
-    return this.belongsToMany('Spec').withPivot(['value'])
+    return this.belongsToMany('Spec', 'junction_part_spec').withPivot(['value'])
   }
 
   pvariations() {

@@ -14,7 +14,7 @@ export default bs.model('Build', bs.Model.extend({
   }
 
   btags() {
-    return this.belongsToMany('BTag')
+    return this.belongsToMany('BTag', 'junction_btag_build')
   }
 
   bvariations() {
