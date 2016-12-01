@@ -12,10 +12,6 @@ config.isDevelopment = config.env === 'development'
 
 config.jwtSecret = 'secret' // TODO
 
-config.tables = {
-  account: 'account'
-}
-
 config.standardHttpStatusCodes = {
   // TODO
   400: 'Bad Request',

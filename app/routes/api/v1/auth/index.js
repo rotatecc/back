@@ -1,12 +1,13 @@
 import makeResource, { methods } from '../../../../resource'
 import { authenticate } from '../../../../utils'
 
+import { Account } from '../../../../models'
 import schema from '../account/schema'
 
 
 export default makeResource({
   config: {
-    table: 'account',
+    model: Account,
     schema,
     defaultReturning: [
       'id',

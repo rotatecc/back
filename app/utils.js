@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken'
 import Joi from 'joi'
 
 import config from './config'
-import db from './db'
+import { Account } from './models'
 
 
 export class ApiError {
@@ -161,9 +161,8 @@ export function authenticate(email, password) {
 
   // find user
 
-  return db
-  .select(['id', 'email', 'display', 'password'])
-  .from('account')
+  return Account
+  .query()
   .where({ email })
   .then(makeSingleOrReject)
   // 404 errors would reveal the user doesn't exist,

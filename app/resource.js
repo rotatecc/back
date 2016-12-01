@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
 
-import db from './db'
 import {
   ApiError,
   makePromiseHandler,
@@ -112,19 +111,19 @@ export default function makeResource({ config, endpoints }) {
           ////////////////////////
 
           if (ep.getType === 'all') {
-            return db
+            return config.model
+              .query()
               .select(returning)
-              .from(config.table)
           } else if (ep.getType === 'paginate') {
-            return db
+            return config.model
+              .query()
               .select(returning)
-              .from(config.table)
               .limit(2) // TODO
               .offset(0) // TODO
           } else if (ep.getType === 'single') {
-            return db
+            return config.model
+              .query()
               .select(returning)
-              .from(config.table)
               .where({ id: idMaybe })
               .then(makeSingleOrReject)
           }
@@ -137,7 +136,8 @@ export default function makeResource({ config, endpoints }) {
           // PUT + PATCH
           ////////////////////////
 
-          return db(config.table)
+          return config.model
+            .query()
             .where('id', idMaybe)
             .update(bodyMaybe)
             .returning(returning)
@@ -146,7 +146,8 @@ export default function makeResource({ config, endpoints }) {
           // DELETE
           ////////////////////////
 
-          return db(config.table)
+          return config.model
+            .query()
             .where('id', idMaybe)
             .del()
             .then((deleteCount) => {
@@ -174,7 +175,7 @@ export default function makeResource({ config, endpoints }) {
 
 // makeResource({
 //   config: {
-//     table: 'account',
+//     model: Account,
 //     schema,
 //     roles: [] | null // see below (but for entire resource)
 //   },
