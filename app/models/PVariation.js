@@ -4,6 +4,7 @@ import { bs } from '../db'
 import Part from './Part'
 import Spec from './Spec'
 import BVariation from './BVariation'
+import Photo from './Photo'
 
 export default bs.model('PVariation', bs.Model.extend({
   tableName: 'pvariation',
@@ -19,5 +20,9 @@ export default bs.model('PVariation', bs.Model.extend({
 
   bvariations() {
     return this.belongsToMany('BVariation', 'junction_bvariation_pvariation')
+  }
+
+  photos() {
+    return this.morphMany('Photo', 'photoable')
   }
 }))

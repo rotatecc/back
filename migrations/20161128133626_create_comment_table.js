@@ -9,6 +9,10 @@ exports.up = function(knex, Promise) {
     // belongsTo Account
     table.integer('account_id').unsigned()
     table.foreign('account_id').references('id').inTable('account')
+
+    // morphTo commentable
+    table.integer('commentable_id').unsigned()
+    table.string('commentable_type').notNullable()
   })
 }
 

@@ -4,6 +4,7 @@ import { bs } from '../db'
 import Account from './Account'
 import BTag from './BTag'
 import BVariation from './BVariation'
+import Comment from './Comment'
 
 export default bs.model('Build', bs.Model.extend({
   tableName: 'build',
@@ -19,5 +20,9 @@ export default bs.model('Build', bs.Model.extend({
 
   bvariations() {
     return this.hasMany('BVariation')
+  }
+
+  comments() {
+    return this.morphMany('Comment', 'commentable');
   }
 }))

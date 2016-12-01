@@ -10,6 +10,10 @@ exports.up = function(knex, Promise) {
     // belongsTo Account
     table.integer('account_id').unsigned()
     table.foreign('account_id').references('id').inTable('account')
+
+    // morphTo reviewable
+    table.integer('reviewable_id').unsigned()
+    table.string('reviewable_type').notNullable()
   })
 }
 
