@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import Account from './Account'
 
 export default bs.model('Role', bs.Model.extend({

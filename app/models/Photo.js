@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import Account from './Account'
 import BVariation from './BVariation'
 import PVariation from './PVariation'

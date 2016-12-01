@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import Role from './Role'
 import Status from './Status'
 import Build from './Build'

@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import Part from './Part'
 
 export default bs.model('Brand', bs.Model.extend({

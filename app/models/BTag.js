@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import Build from './Build'
 
 export default bs.model('BTag', bs.Model.extend({

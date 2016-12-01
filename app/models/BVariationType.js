@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import BVariation from './BVariation'
 
 export default bs.model('BVariationType', bs.Model.extend({

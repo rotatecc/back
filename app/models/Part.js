@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import PType from './PType'
 import Brand from './Brand'
 import Spec from './Spec'

@@ -1,6 +1,6 @@
 import { bs } from '../db'
 
-// related
+// Relationships
 import BVariationType from './BVariationType'
 import Build from './Build'
 import PVariation from './PVariation'
