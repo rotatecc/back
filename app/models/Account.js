@@ -8,6 +8,10 @@ export default bs.model('Account', bs.Model.extend({
   hasTimestamps: true,
 
   role() {
-    return this.belongsTo('Role');
+    return this.belongsTo('Role')
+  }
+
+  status() {
+    return this.belongsTo('Status')
   }
 }))

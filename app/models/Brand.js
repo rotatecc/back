@@ -1,0 +1,12 @@
+import { bs } from '../db'
+
+// related
+// import Part from './Part'
+
+export default bs.model('Brand', bs.Model.extend({
+  tableName: 'brand',
+
+  parts() {
+    return this.hasMany('Part')
+  }
+}))
