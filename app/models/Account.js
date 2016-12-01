@@ -2,6 +2,10 @@ import { bs } from '../db'
 
 // related
 import Role from './Role'
+// import Build from './Build'
+// import Comment from './Comment'
+// import Photo from './Photo'
+// import Review from './Review'
 
 export default bs.model('Account', bs.Model.extend({
   tableName: 'account',
@@ -14,4 +18,20 @@ export default bs.model('Account', bs.Model.extend({
   status() {
     return this.belongsTo('Status')
   }
+
+  // builds() {
+  //   return this.hasMany('Build')
+  // }
+  //
+  // comments() {
+  //   return this.hasMany('Comment')
+  // }
+  //
+  // photos() {
+  //   return this.hasMany('Photo')
+  // }
+  //
+  // reviews() {
+  //   return this.hasMany('Review')
+  // }
 }))
