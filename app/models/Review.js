@@ -10,9 +10,9 @@ export default bs.model('Review', bs.Model.extend({
 
   account() {
     return this.belongsTo('Account')
-  }
+  },
 
   reviewable() {
     return this.morphTo('reviewable', 'Part')
-  }
+  },
 }))

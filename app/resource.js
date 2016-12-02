@@ -92,12 +92,12 @@ export default function makeResource({ config, endpoints }) {
         return Promise.resolve()
       })
       .then((bodyMaybe) => {
+        const idMaybe = req.params.id && parseInt(req.params.id, 10)
+
         // Endpoint can override the default database calls
         if (ep.overrideResponse) {
-          return ep.overrideResponse(bodyMaybe)
+          return ep.overrideResponse(idMaybe, bodyMaybe)
         }
-
-        const idMaybe = req.params.id && parseInt(req.params.id, 10)
 
         const returning = ep.returning || config.defaultReturning || ['id']
 

@@ -12,13 +12,13 @@ export default bs.model('Photo', bs.Model.extend({
 
   account() {
     return this.belongsTo('Account')
-  }
+  },
 
   photoable() {
     return this.morphTo('photoable', 'BVariation', 'PVariation')
-  }
+  },
 
   comments() {
     return this.morphMany('Comment', 'commentable')
-  }
+  },
 }))

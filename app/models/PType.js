@@ -8,5 +8,5 @@ export default bs.model('PType', bs.Model.extend({
 
   parts() {
     return this.hasMany('Part')
-  }
+  },
 }))

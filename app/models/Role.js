@@ -8,5 +8,5 @@ export default bs.model('Role', bs.Model.extend({
 
   accounts() {
     return this.hasMany('Account')
-  }
+  },
 }))

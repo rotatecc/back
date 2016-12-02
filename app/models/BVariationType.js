@@ -8,5 +8,5 @@ export default bs.model('BVariationType', bs.Model.extend({
 
   bvariations() {
     return this.hasMany('BVariation')
-  }
+  },
 }))

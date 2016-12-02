@@ -14,25 +14,25 @@ export default bs.model('Part', bs.Model.extend({
 
   ptype() {
     return this.belongsTo('PType')
-  }
+  },
 
   brand() {
     return this.belongsTo('Brand')
-  }
+  },
 
   specs() {
     return this.belongsToMany('Spec', 'junction_part_spec').withPivot(['value'])
-  }
+  },
 
   pvariations() {
     return this.hasMany('PVariation')
-  }
+  },
 
   comments() {
     return this.morphMany('Comment', 'commentable')
-  }
+  },
 
   reviews() {
     return this.morphMany('Review', 'reviewable')
-  }
+  },
 }))

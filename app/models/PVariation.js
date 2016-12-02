@@ -12,17 +12,17 @@ export default bs.model('PVariation', bs.Model.extend({
 
   part() {
     return this.belongsTo('Part')
-  }
+  },
 
   specs() {
     return this.belongsToMany('Spec', 'junction_pvariation_spec').withPivot(['value'])
-  }
+  },
 
   bvariations() {
     return this.belongsToMany('BVariation', 'junction_bvariation_pvariation')
-  }
+  },
 
   photos() {
     return this.morphMany('Photo', 'photoable')
-  }
+  },
 }))

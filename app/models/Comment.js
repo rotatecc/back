@@ -12,9 +12,9 @@ export default bs.model('Comment', bs.Model.extend({
 
   account() {
     return this.belongsTo('Account')
-  }
+  },
 
   commentable() {
     return this.morphTo('commentable', 'Build', 'Part', 'Photo')
-  }
+  },
 }))

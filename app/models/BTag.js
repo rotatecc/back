@@ -8,5 +8,5 @@ export default bs.model('BTag', bs.Model.extend({
 
   builds() {
     return this.belongsToMany('Build', 'junction_btag_build')
-  }
+  },
 }))

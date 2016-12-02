@@ -9,5 +9,5 @@ export default bs.model('Brand', bs.Model.extend({
 
   parts() {
     return this.hasMany('Part')
-  }
+  },
 }))

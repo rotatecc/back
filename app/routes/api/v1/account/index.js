@@ -4,24 +4,36 @@ import { hash } from '../../../../utils'
 import { Account } from '../../../../models'
 import schema from './schema'
 
+const defaultReturning = [
+  'id',
+  'email',
+  'display',
+  'last_login',
+  'created_at',
+  'updated_at',
+
+  'role_id',
+  'status_id',
+]
 
 export default makeResource({
   config: {
     model: Account,
     schema,
-    defaultReturning: [
-      'id',
-      'email',
-      'display',
-      'last_login',
-      'created_at',
-      'updated_at'
-    ]
+    defaultReturning
   },
   endpoints: [
     {
       method: methods.GET,
       getType: 'single',
+      overrideResponse(idMaybe, bodyMaybe) {
+        return Account
+          .where({ id: idMaybe })
+          .fetch({
+            columns: defaultReturning,
+            withRelated: ['role', 'status'],
+          })
+      },
     },
     {
       method: methods.GET,

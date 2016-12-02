@@ -14,25 +14,25 @@ export default bs.model('Account', bs.Model.extend({
 
   role() {
     return this.belongsTo('Role')
-  }
+  },
 
   status() {
     return this.belongsTo('Status')
-  }
+  },
 
   builds() {
     return this.hasMany('Build')
-  }
+  },
 
   comments() {
     return this.hasMany('Comment')
-  }
+  },
 
   photos() {
     return this.hasMany('Photo')
-  }
+  },
 
   reviews() {
     return this.hasMany('Review')
-  }
+  },
 }))

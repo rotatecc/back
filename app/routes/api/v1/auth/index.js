@@ -24,7 +24,7 @@ export default makeResource({
       roles: false,
       method: methods.POST,
       pickSchema: ['email', 'password_login'],
-      overrideResponse: ({ email, password_login }) => {
+      overrideResponse: (idMaybe, { email, password_login }) => {
         return authenticate(email, password_login)
       }
     }
