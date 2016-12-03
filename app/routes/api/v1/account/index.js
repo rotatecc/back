@@ -1,11 +1,13 @@
 import _ from 'lodash'
 
-import config from '../../../../config'
-import makeResource, { methods } from '../../../../resource'
-import { hash, preparePaginatedResult, catchNotFound } from '../../../../utils'
+import config from 'config'
+import makeResource, { methods } from 'resource'
+import { hash, preparePaginatedResult, catchNotFound } from 'utils'
 
-import { Account } from '../../../../models'
+import { Account } from 'models'
+
 import schema from './schema'
+
 
 const defaultReturning = [
   'id',
@@ -18,6 +20,7 @@ const defaultReturning = [
   'role_id',
   'status_id',
 ]
+
 
 export default makeResource({
   endpoints: [

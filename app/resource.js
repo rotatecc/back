@@ -10,7 +10,7 @@ import {
   hash,
   makeSingleOrReject,
   verifyAuthAndRole
-} from './utils'
+} from 'utils'
 
 
 export const methods = {

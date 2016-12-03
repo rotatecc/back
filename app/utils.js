@@ -7,8 +7,8 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import Joi from 'joi'
 
-import config from './config'
-import { Account } from './models'
+import config from 'config'
+import { Account } from 'models'
 
 
 export class ApiError {

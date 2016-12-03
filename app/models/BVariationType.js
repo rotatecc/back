@@ -1,4 +1,4 @@
-import { bs } from '../db'
+import { bs } from 'db'
 
 // Relationships
 import BVariation from './BVariation'
