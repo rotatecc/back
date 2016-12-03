@@ -15,10 +15,20 @@ config.jwtSecret = 'secret' // TODO
 config.standardHttpStatusCodes = {
   // TODO
   400: 'Bad Request',
+  403: 'Forbidden',
   404: 'Not Found',
   500: 'Internal Server Error'
 }
 
 config.bcryptSaltRounds = 10
+
+config.roleOrder = {
+  'user': 1,
+  'mod': 2,
+  'admin': 3,
+  'super': 4
+}
+
+config.standardPageSize = 20
 
 export default config

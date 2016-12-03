@@ -11,6 +11,7 @@ import Review from './Review'
 export default bs.model('Account', bs.Model.extend({
   tableName: 'account',
   hasTimestamps: true,
+  hidden: ['password'],
 
   role() {
     return this.belongsTo('Role')

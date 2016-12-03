@@ -1,5 +1,8 @@
+import _ from 'lodash'
+
+import config from '../../../../config'
 import makeResource, { methods } from '../../../../resource'
-import { hash } from '../../../../utils'
+import { hash, preparePaginatedResult, catchNotFound } from '../../../../utils'
 
 import { Account } from '../../../../models'
 import schema from './schema'
@@ -17,51 +20,67 @@ const defaultReturning = [
 ]
 
 export default makeResource({
-  config: {
-    model: Account,
-    schema,
-    defaultReturning
-  },
   endpoints: [
     {
       method: methods.GET,
       getType: 'single',
-      overrideResponse(idMaybe, bodyMaybe) {
+      role: 'super',
+      makeResponse({ idMaybe }) {
         return Account
-          .where({ id: idMaybe })
-          .fetch({
-            columns: defaultReturning,
-            withRelated: ['role', 'status'],
-          })
+        .where({ id: idMaybe })
+        .fetch({
+          columns: defaultReturning,
+          withRelated: ['role', 'status'],
+        })
       },
     },
     {
       method: methods.GET,
       getType: 'paginate',
+      makeResponse({ req }) {
+        return Account
+        .fetchPage({
+          pageSize: config.standardPageSize,
+          page: req.query.page,
+          columns: defaultReturning,
+          withRelated: ['role', 'status'],
+        })
+        .then(preparePaginatedResult)
+      },
     },
     {
       method: methods.PATCH,
-      pickSchema: ['email', 'display'],
-    },
-    {
-      method: methods.DELETE,
+      schema: _.pick(schema, ['email', 'display']),
+      makeResponse({ idMaybe, bodyMaybe }) {
+        return Account
+        .where('id', idMaybe)
+        .fetch({ require: true })
+        .catch(catchNotFound)
+        .then((account) => {
+          account.set(bodyMaybe)
+          return account.save()
+        })
+      },
     },
     {
       suffix: '/password',
       method: methods.PUT,
-      returning: ['id'],
-      pickSchema: ['password', 'password_confirmation'],
-      prepareBody: ({ password }) => {
+      schema: _.pick(schema, ['password', 'password_confirmation']),
+      prepareBody({ password }) {
         return hash(password)
         .catch((err) => {
           return Promise.reject(new ApiError(500, `Password hashing failed: ${err.message}`))
         })
-        .then((passwordHashed) => {
-          return {
-            password: passwordHashed
-          }
-        })
-      }
+        // put hash under password key
+        .then((password) => ({ password }))
+      },
+      makeResponse() {
+        // TODO
+        // * check existence
+        // * check ownership
+        // * save
+        return true
+      },
     },
   ]
 })

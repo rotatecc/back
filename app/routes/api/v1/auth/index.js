@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import makeResource, { methods } from '../../../../resource'
 import { authenticate } from '../../../../utils'
 
@@ -6,26 +8,15 @@ import schema from '../account/schema'
 
 
 export default makeResource({
-  config: {
-    model: Account,
-    schema,
-    defaultReturning: [
-      'id',
-      'email',
-      'display',
-      'last_login',
-      'created_at',
-      'updated_at'
-    ]
-  },
   endpoints: [
     {
       suffix: '/login',
-      roles: false,
+      role: false,
       method: methods.POST,
-      pickSchema: ['email', 'password_login'],
-      overrideResponse: (idMaybe, { email, password_login }) => {
-        return authenticate(email, password_login)
+      schema: { email: schema.email, password: schema.password_login },
+      makeResponse: ({ bodyMaybe }) => {
+        const { email, password } = bodyMaybe
+        return authenticate(email, password)
       }
     }
   ]

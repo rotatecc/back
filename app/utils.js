@@ -119,6 +119,11 @@ export function makeSingleOrReject(results) {
 }
 
 
+export function catchNotFound(err) {
+  return Promise.reject(new ApiError(404))
+}
+
+
 /**
  * Use Joi to validate data with a schema,
  * returns a Promise
@@ -149,6 +154,10 @@ export function reqWithPage(req) {
     .catch(err => {
       return Promise.reject(new ApiError(400, 'Bad page'))
     })
+    .then((page) => {
+      req.query.page = page // replace with parsed
+      return Promise.resolve()
+    })
 }
 
 
@@ -162,18 +171,25 @@ export function authenticate(email, password) {
   // find user
 
   return Account
-  .query()
   .where({ email })
-  .then(makeSingleOrReject)
+  .fetch({
+    require: true,
+    withRelated: ['role', 'status'],
+  })
   // 404 errors would reveal the user doesn't exist,
   // but we want to be ambiguous and give the
   // same error as giving a bad password:
   .catch(() => Promise.reject(badUserError))
   .then((user) => {
+    // TODO check status
+
+    return user
+  })
+  .then((user) => {
     // verify password
 
     return new Promise((resolve, reject) => {
-      bcrypt.compare(password, user.password, (err, res) => {
+      bcrypt.compare(password, user.get('password'), (err, res) => {
         if (err) {
           return Promise.reject(new ApiError(500, 'Password hashing failed'))
         }
@@ -183,14 +199,20 @@ export function authenticate(email, password) {
           return reject(badUserError)
         }
 
-        // continue with user obj, omitting the password entry
-        return resolve(_.omit(user, ['password']))
+        // continue with user as obj
+        return resolve(user.toJSON())
       })
     })
   })
   .then((user) => {
     return new Promise((resolve, reject) => {
-      jwt.sign(user, config.jwtSecret, jwtOptions, (err, token) => {
+      const payload = Object.assign(
+        {},
+        _.omit(user, ['role', 'status', 'role_id', 'status_id']),
+        { roleSlug: user.role.slug }
+      )
+
+      jwt.sign(payload, config.jwtSecret, jwtOptions, (err, token) => {
         if (err) {
           // we're at fault
           reject(new ApiError(500, 'could not sign token'))
@@ -203,26 +225,43 @@ export function authenticate(email, password) {
 }
 
 
-export function verifyAuthRole(req, roleSlugs) {
-  if (roleSlugs === false) {
+export function roleMeetsRequirement(role, requirement = 'super') {
+  if (requirement === false) {
+    return true
+  }
+
+  const roleLevel = config.roleOrder[role]
+  const requirementLevel = config.roleOrder[requirement]
+
+  if (requirement === true || !roleLevel || !requirementLevel) {
+    return false
+  }
+
+  return roleLevel >= requirementLevel
+}
+
+
+/**
+ * Verify a request's jwt auth if a certain role minimum is required
+ * Can supply true for no access (forbidden to all), false for no auth.
+ * otherwise, supply a role slug (ex. 'admin').
+ */
+export function verifyAuthAndRole(req, minRole = true) {
+  if (minRole === false) {
     return Promise.resolve()
   }
 
+  // Get the token from the request
   const token = req.headers['x-access-token']
 
   if (!token) {
     return Promise.reject(new ApiError(401, 'Auth token not supplied'))
   }
 
-  // if roleSlugs wasn't an array, put its value in an array
-  const roleSlugsFinal = _.isArray(roleSlugs) ? roleSlugs : [roleSlugs]
-
   return new Promise((resolve, reject) => {
     jwt.verify(token, config.jwtSecret, (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
-          // NOTE 440 isn't a standard response code,
-          // defined by Microsoft, means login expiration
           reject(new ApiError(440, 'Auth token expired'))
         }
 
@@ -230,15 +269,22 @@ export function verifyAuthRole(req, roleSlugs) {
         reject(new ApiError(401, err.message))
       }
 
-      // TODO uncomment role checking
-      // // jwt is good, now for the role...
-      // if (roleSlugs.includes(decoded.roleSlug)) {
-      //   // send 403 forbidden (authenticated, but forbidden)
-      //   reject(new ApiError(403, 'forbidden'))
-      // }
+      // jwt is good, now for the role...
+      if (!roleMeetsRequirement(decoded.roleSlug, minRole)) {
+        // send 403 forbidden (authenticated, but forbidden)
+        reject(new ApiError(403))
+      }
 
-      // all set, resolve with the payload
+      // all set! resolve with the payload
       resolve(decoded)
     })
   })
+}
+
+
+// Bookshelf's model.fetchPage result json-stringifies to only the models.
+// This is a simple helper to bypass its toJSON
+// and include the pagination metadata
+export function preparePaginatedResult({ models, pagination }) {
+  return Promise.resolve({ results: models, pagination })
 }
