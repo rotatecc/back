@@ -50,6 +50,7 @@ export default function makeResource({ endpoints }) {
       return Promise.resolve()
       .then(() => {
         // check auth + role
+        // (mutates req.currentAccount if ep.role is not false and everything checks out)
 
         return verifyAuthAndRole(req, ep.role)
       })

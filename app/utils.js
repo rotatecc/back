@@ -53,7 +53,7 @@ export function stdErrorResponse(res) {
       res.status(err.code)
       res.json(jsonResponse(false, err.code, err.message))
     } else if (err instanceof Error && err.isJoi) {
-      // Error is a Joi validation error, so the user is at fault
+      // Error is a Joi validation error, so the account is at fault
 
       // Map (potentially multiple) details to their messages
       const detailMessages = err.details.map((detail) => detail.message)
@@ -166,9 +166,9 @@ export function authenticate(email, password) {
     algorithm: 'HS256' // TODO replace with RS256 + .pem file
   }
 
-  const badUserError = new ApiError(401, 'bad email or password')
+  const badAccountError = new ApiError(401, 'Bad email or password')
 
-  // find user
+  // find account
 
   return Account
   .where({ email })
@@ -176,46 +176,50 @@ export function authenticate(email, password) {
     require: true,
     withRelated: ['role', 'status'],
   })
-  // 404 errors would reveal the user doesn't exist,
+  // 404 errors would reveal the account doesn't exist,
   // but we want to be ambiguous and give the
   // same error as giving a bad password:
-  .catch(() => Promise.reject(badUserError))
-  .then((user) => {
-    // TODO check status
+  .catch(() => Promise.reject(badAccountError))
+  .then((account) => {
+    // check account status === okay
 
-    return user
+    if (account.status.slug !== 'okay') {
+      return Promise.reject(new ApiError(403, 'You are bannedd'))
+    }
+
+    return account
   })
-  .then((user) => {
+  .then((account) => {
     // verify password
 
     return new Promise((resolve, reject) => {
-      bcrypt.compare(password, user.get('password'), (err, res) => {
+      bcrypt.compare(password, account.get('password'), (err, res) => {
         if (err) {
           return Promise.reject(new ApiError(500, 'Password hashing failed'))
         }
 
         if (!res) {
           // bad password
-          return reject(badUserError)
+          return reject(badAccountError)
         }
 
-        // continue with user as obj
-        return resolve(user.toJSON())
+        // continue with account as obj
+        return resolve(account.toJSON())
       })
     })
   })
-  .then((user) => {
+  .then((account) => {
     return new Promise((resolve, reject) => {
       const payload = Object.assign(
         {},
-        _.omit(user, ['role', 'status', 'role_id', 'status_id']),
-        { roleSlug: user.role.slug }
+        _.omit(account, ['role', 'status', 'role_id', 'status_id']),
+        { roleSlug: account.role.slug }
       )
 
       jwt.sign(payload, config.jwtSecret, jwtOptions, (err, token) => {
         if (err) {
           // we're at fault
-          reject(new ApiError(500, 'could not sign token'))
+          reject(new ApiError(500, 'Could not sign token'))
         }
 
         resolve(token)
@@ -245,6 +249,8 @@ export function roleMeetsRequirement(role, requirement = 'super') {
  * Verify a request's jwt auth if a certain role minimum is required
  * Can supply true for no access (forbidden to all), false for no auth.
  * otherwise, supply a role slug (ex. 'admin').
+ *
+ * If everything is valid, mutate req and set req.currentAccount = decoded payload
  */
 export function verifyAuthAndRole(req, minRole = true) {
   if (minRole === false) {
@@ -275,7 +281,12 @@ export function verifyAuthAndRole(req, minRole = true) {
         reject(new ApiError(403))
       }
 
-      // all set! resolve with the payload
+      // all set!
+
+      // mutate req by setting currentAccount
+      req.currentAccount = decoded
+
+      // resolve
       resolve(decoded)
     })
   })
@@ -287,4 +298,24 @@ export function verifyAuthAndRole(req, minRole = true) {
 // and include the pagination metadata
 export function preparePaginatedResult({ models, pagination }) {
   return Promise.resolve({ results: models, pagination })
+}
+
+
+// Verify the current account's ownership over a resource
+// Assumes req.currentAccount has been set, if not, fail
+export function verifyOwnership(resource, req, accountIdGetter = ((r) => r.get('account_id'))) {
+  if (!req.currentAccount || req.currentAccount.id !== accountIdGetter(resource)) {
+    return Promise.reject(new ApiError(403))
+  }
+
+  return Promise.resolve(resource)
+}
+
+
+// Makes a handler that verifies the current account's ownership over a resource
+// Assumes req.currentAccount has been set, if not, fail
+export function makeOwnershipVerifier(req, accountIdGetter) {
+  return (resource) => {
+    return verifyOwnership(resource, req, accountIdGetter)
+  }
 }
