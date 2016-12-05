@@ -12,7 +12,7 @@ export default makeResource({
     {
       method: methods.GET,
       getType: 'paginate',
-      role: 'super',
+      role: 'admin',
       makeResponse({ req }) {
         return BTag
         .fetchPage({
@@ -27,7 +27,7 @@ export default makeResource({
     {
       method: methods.GET,
       getType: 'single',
-      role: 'super',
+      role: 'admin',
       makeResponse({ idMaybe }) {
         return BTag
         .where({ id: idMaybe })
@@ -40,7 +40,7 @@ export default makeResource({
 
     {
       method: methods.POST,
-      role: 'super',
+      role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
         return BTag
@@ -62,7 +62,7 @@ export default makeResource({
 
     {
       method: methods.PUT,
-      role: 'super',
+      role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
         return BTag
@@ -91,7 +91,7 @@ export default makeResource({
 
     {
       method: methods.DELETE,
-      role: 'super',
+      role: 'admin',
       makeResponse({ idMaybe }) {
         return BTag
         .where('id', idMaybe)
