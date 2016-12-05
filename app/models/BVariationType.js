@@ -1,7 +1,7 @@
 import { bs } from 'db'
 
 // Relationships
-import BVariation from './BVariation'
+import './BVariation'
 
 export default bs.model('BVariationType', bs.Model.extend({
   tableName: 'bvariationtype',

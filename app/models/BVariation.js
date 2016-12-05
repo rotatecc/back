@@ -1,10 +1,10 @@
 import { bs } from 'db'
 
 // Relationships
-import BVariationType from './BVariationType'
-import Build from './Build'
-import PVariation from './PVariation'
-import Photo from './Photo'
+import './BVariationType'
+import './Build'
+import './PVariation'
+import './Photo'
 
 export default bs.model('BVariation', bs.Model.extend({
   tableName: 'bvariation',

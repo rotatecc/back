@@ -1,8 +1,8 @@
 import { bs } from 'db'
 
 // Relationships
-import Account from './Account'
-import Part from './Part'
+import './Account'
+import './Part'
 
 export default bs.model('Review', bs.Model.extend({
   tableName: 'review',

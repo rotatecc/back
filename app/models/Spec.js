@@ -1,8 +1,8 @@
 import { bs } from 'db'
 
 // Relationships
-import Part from './Part'
-import PVariation from './PVariation'
+import './Part'
+import './PVariation'
 
 export default bs.model('Spec', bs.Model.extend({
   tableName: 'spec',

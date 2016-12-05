@@ -1,10 +1,10 @@
 import { bs } from 'db'
 
 // Relationships
-import Account from './Account'
-import BTag from './BTag'
-import BVariation from './BVariation'
-import Comment from './Comment'
+import './Account'
+import './BTag'
+import './BVariation'
+import './Comment'
 
 export default bs.model('Build', bs.Model.extend({
   tableName: 'build',

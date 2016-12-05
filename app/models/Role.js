@@ -1,7 +1,7 @@
 import { bs } from 'db'
 
 // Relationships
-import Account from './Account'
+import './Account'
 
 export default bs.model('Role', bs.Model.extend({
   tableName: 'role',

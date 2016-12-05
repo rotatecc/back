@@ -1,7 +1,7 @@
 import { bs } from 'db'
 
 // Relationships
-import Part from './Part'
+import './Part'
 
 export default bs.model('Brand', bs.Model.extend({
   tableName: 'brand',

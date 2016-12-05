@@ -1,7 +1,7 @@
 import { bs } from 'db'
 
 // Relationships
-import Build from './Build'
+import './Build'
 
 export default bs.model('BTag', bs.Model.extend({
   tableName: 'btag',

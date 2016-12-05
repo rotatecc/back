@@ -1,10 +1,10 @@
 import { bs } from 'db'
 
 // Relationships
-import Account from './Account'
-import Build from './Build'
-import Part from './Part'
-import Photo from './Photo'
+import './Account'
+import './Build'
+import './Part'
+import './Photo'
 
 export default bs.model('Comment', bs.Model.extend({
   tableName: 'comment',

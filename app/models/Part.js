@@ -1,12 +1,12 @@
 import { bs } from 'db'
 
 // Relationships
-import PType from './PType'
-import Brand from './Brand'
-import Spec from './Spec'
-import PVariation from './PVariation'
-import Comment from './Comment'
-import Review from './Review'
+import './PType'
+import './Brand'
+import './Spec'
+import './PVariation'
+import './Comment'
+import './Review'
 
 export default bs.model('Part', bs.Model.extend({
   tableName: 'part',

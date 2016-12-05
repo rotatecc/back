@@ -1,12 +1,12 @@
 import { bs } from 'db'
 
 // Relationships
-import Role from './Role'
-import Status from './Status'
-import Build from './Build'
-import Comment from './Comment'
-import Photo from './Photo'
-import Review from './Review'
+import './Role'
+import './Status'
+import './Build'
+import './Comment'
+import './Photo'
+import './Review'
 
 export default bs.model('Account', bs.Model.extend({
   tableName: 'account',
