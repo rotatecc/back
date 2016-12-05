@@ -2,7 +2,7 @@ import config from 'config'
 import makeResource, { methods } from 'resource'
 import { ApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
-import { Brand } from 'models'
+import { Spec } from 'models'
 
 import schema from './schema'
 
@@ -14,7 +14,7 @@ export default makeResource({
       getType: 'paginate',
       role: 'super',
       makeResponse({ req }) {
-        return Brand
+        return Spec
         .fetchPage({
           pageSize: config.standardPageSize,
           page: req.query.page,
@@ -29,7 +29,7 @@ export default makeResource({
       getType: 'single',
       role: 'super',
       makeResponse({ idMaybe }) {
-        return Brand
+        return Spec
         .where({ id: idMaybe })
         .fetch({
           require: true,
@@ -43,17 +43,17 @@ export default makeResource({
       role: 'super',
       schema,
       makeResponse({ bodyMaybe }) {
-        return Brand
+        return Spec
         .where({ name: bodyMaybe.name })
         .fetch()
         .then((b) => {
           if (b) {
-            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+            return Promise.reject(new ApiError(400, 'Spec with name already exists'))
           }
         })
         .then(() => {
-          // Forge new Brand
-          return Brand
+          // Forge new Spec
+          return Spec
           .forge(bodyMaybe)
           .save()
         })
@@ -65,16 +65,16 @@ export default makeResource({
       role: 'super',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return Brand
+        return Spec
         .where({ name: bodyMaybe.name })
         .fetch()
         .then((b) => {
           if (b && b.get('id') !== idMaybe) {
-            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+            return Promise.reject(new ApiError(400, 'Spec with name already exists'))
           }
         })
         .then(() => {
-          return Brand
+          return Spec
           .where('id', idMaybe)
           .fetch({
             require: true,
@@ -82,9 +82,9 @@ export default makeResource({
           })
         })
         .catch(catchNotFound)
-        .then((brand) => {
-          brand.set(bodyMaybe)
-          return brand.save()
+        .then((spec) => {
+          spec.set(bodyMaybe)
+          return spec.save()
         })
       }
     },
@@ -93,22 +93,26 @@ export default makeResource({
       method: methods.DELETE,
       role: 'super',
       makeResponse({ idMaybe }) {
-        return Brand
+        return Spec
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['parts']
+          withRelated: ['parts', 'pvariations']
         })
         .catch(catchNotFound)
-        .then((brand) => {
-          if (!brand.related('parts').isEmpty()) {
-            return Promise.reject(new ApiError(400, 'Cannot delete, brand has dependent parts'))
+        .then((spec) => {
+          if (!spec.related('parts').isEmpty()) {
+            return Promise.reject(new ApiError(400, 'Cannot delete, spec has dependent parts'))
           }
 
-          return brand
+          if (!spec.related('pvariations').isEmpty()) {
+            return Promise.reject(new ApiError(400, 'Cannot delete, spec has dependent pvariations'))
+          }
+
+          return spec
         })
-        .then((brand) => {
-          return brand.destroy({ require: true })
+        .then((spec) => {
+          return spec.destroy({ require: true })
         })
         .then((b) => null)
       }
