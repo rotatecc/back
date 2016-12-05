@@ -9,7 +9,7 @@ exports.seed = function(knex, Promise) {
         { slug: 'blueprint', name: 'Blueprint' },
         { slug: 'progress', name: 'Progress' },
         { slug: 'completed', name: 'Completed' },
-        { slug: 'variation', name: 'Blueprint' },
+        { slug: 'variation', name: 'Variation' },
       ].map(function (fields) {
         return knex(tableName).insert(fields)
       }))

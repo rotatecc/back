@@ -1,4 +1,4 @@
-require('../app/setup-babel')
+require('../app/setup')
 var hash = require('../app/utils').hash
 
 exports.seed = function(knex, Promise) {
