@@ -12,6 +12,8 @@ const endpoints = [
   'auth',
   'account',
   'brand',
+  'spec',
+  'btag',
 ]
 
 endpoints.forEach((endpoint) => {
