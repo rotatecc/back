@@ -3,7 +3,7 @@ import Promise from 'bluebird'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { ApiError, hash, preparePaginatedResult, catchNotFound, makeOwnershipVerifier } from 'utils'
+import { ApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Account, Status } from 'models'
 
@@ -40,8 +40,8 @@ export default makeResource({
         return Account
         .where({ id: idMaybe })
         .fetch({
-          withRelated: ['role', 'status'],
           require: true,
+          withRelated: ['role', 'status'],
         })
       },
     },
