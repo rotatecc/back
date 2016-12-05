@@ -11,11 +11,33 @@ import schema from '../account/schema'
 export default makeResource({
   endpoints: [
     {
-      suffix: '/login',
-      role: false,
+      suffix: '/register',
       method: methods.POST,
+      role: false,
+      schema: _.pick(schema, ['email', 'display', 'password']),
+      makeResponse({ bodyMaybe }) {
+        // TODO
+        // 1) find default role
+        // 2) find default status
+        // 3) make sure email / display name doesn't already exist
+
+        Account
+        .forge(bodyMaybe)
+        .save()
+        .then((account) => {
+          // TODO enqueue new account registration email
+
+          return account
+        })
+      }
+    },
+
+    {
+      suffix: '/login',
+      method: methods.POST,
+      role: false,
       schema: { email: schema.email, password: schema.password_login },
-      makeResponse: ({ bodyMaybe }) => {
+      makeResponse({ bodyMaybe }) => {
         const { email, password } = bodyMaybe
         return authenticate(email, password)
       }

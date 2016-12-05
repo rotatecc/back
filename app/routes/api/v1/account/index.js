@@ -29,6 +29,7 @@ export default makeResource({
         })
       },
     },
+
     {
       method: methods.GET,
       getType: 'paginate',
@@ -43,6 +44,7 @@ export default makeResource({
         .then(preparePaginatedResult)
       },
     },
+
     {
       method: methods.PATCH,
       role: 'super',
@@ -58,6 +60,7 @@ export default makeResource({
         })
       },
     },
+
     {
       suffix: '/password',
       method: methods.PUT,
