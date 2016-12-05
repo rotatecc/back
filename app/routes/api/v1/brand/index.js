@@ -44,7 +44,7 @@ export default makeResource({
     {
       method: methods.POST,
       role: 'super',
-      // TODO schema
+      schema,
       makeResponse({ bodyMaybe }) {
         return Brand
         .forge(bodyMaybe)
@@ -55,7 +55,7 @@ export default makeResource({
     {
       method: methods.PUT,
       role: 'super',
-      // TODO schema
+      schema,
       makeResponse({ idMaybe }) {
         return Brand
         .where('id', idMaybe)
