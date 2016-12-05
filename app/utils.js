@@ -122,7 +122,7 @@ export function makeSingleOrReject(results) {
 
 
 export function catchNotFound(err) {
-  return Promise.reject(new ApiError(404))
+  return Promise.reject((err instanceof ApiError) ? err : new ApiError(404))
 }
 
 

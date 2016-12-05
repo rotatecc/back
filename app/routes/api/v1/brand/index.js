@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { preparePaginatedResult, catchNotFound } from 'utils'
+import { ApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Brand } from 'models'
 
@@ -46,10 +46,20 @@ export default makeResource({
       role: 'super',
       schema,
       makeResponse({ bodyMaybe }) {
-        // TODO check for duplicate name
         return Brand
-        .forge(bodyMaybe)
-        .save()
+        .where({ name: bodyMaybe.name })
+        .fetch()
+        .then((b) => {
+          if (b) {
+            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+          }
+        })
+        .then(() => {
+          // Forge new Brand
+          return Brand
+          .forge(bodyMaybe)
+          .save()
+        })
       },
     },
 
@@ -57,16 +67,24 @@ export default makeResource({
       method: methods.PUT,
       role: 'super',
       schema,
-      makeResponse({ idMaybe }) {
-        // TODO check for duplicate name
+      makeResponse({ idMaybe, bodyMaybe }) {
         return Brand
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: []
+        .where({ name: bodyMaybe.name })
+        .fetch()
+        .then((b) => {
+          if (b && b.get('id') !== idMaybe) {
+            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+          }
+        })
+        .then(() => {
+          return Brand
+          .where('id', idMaybe)
+          .fetch({
+            require: true,
+            withRelated: []
+          })
         })
         .catch(catchNotFound)
-        .then(makeOwnershipVerifier(req))
         .then((brand) => {
           brand.set(bodyMaybe)
           return brand.save()
