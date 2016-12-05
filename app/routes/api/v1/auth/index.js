@@ -2,9 +2,9 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import makeResource, { methods } from 'resource'
-import { authenticate, ApiError, catchNotFound, makeOwnershipVerifier } from 'utils'
+import { authenticate, ApiError, hash, catchNotFound, makeOwnershipVerifier } from 'utils'
 
-import { Account } from 'models'
+import { Account, Role, Status } from 'models'
 
 import schema from '../account/schema'
 
@@ -17,18 +17,49 @@ export default makeResource({
       role: false,
       schema: _.pick(schema, ['email', 'display', 'password']),
       makeResponse({ bodyMaybe }) {
-        // TODO
-        // 1) find default role
-        // 2) find default status
-        // 3) make sure email / display name doesn't already exist
+        return Account
+        .where('email', bodyMaybe.email)
+        .fetch()
+        .then((r) => {
+          // Verify uniqueness
 
-        Account
-        .forge(bodyMaybe)
-        .save()
-        .then((account) => {
-          // TODO enqueue new account registration email
+          if (r) {
+            return Promise.reject(new ApiError(400, 'Account with email already exists'))
+          }
+        })
+        .then(() => {
+          // Get default role and status first
 
-          return account
+          return Promise.all([
+            Role.where('slug', 'user').fetch({ require: true }),
+            Status.where('slug', 'okay').fetch({ require: true }),
+          ])
+        })
+        .spread((role, status) => {
+          // Hash password
+
+          return hash(bodyMaybe.password)
+          .catch((err) => {
+            return Promise.reject(new ApiError(500, `Password hashing failed: ${err.message}`))
+          })
+          .then((password) => [role, status, password])
+        })
+        .spread((role, status, password) => {
+          // Forge new account
+
+          return Account
+          .forge({
+            ...bodyMaybe,
+            password,
+            role_id: role.get('id'),
+            status_id: status.get('id')
+          })
+          .save()
+          .then((account) => {
+            // TODO enqueue new account registration email
+
+            return account
+          })
         })
       }
     },

@@ -17,6 +17,7 @@ export class ApiError {
   message
 
   constructor(code, message) {
+    this.name = 'ApiError'
     this.code = code
     this.message = message
   }
