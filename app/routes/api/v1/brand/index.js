@@ -46,6 +46,7 @@ export default makeResource({
       role: 'super',
       schema,
       makeResponse({ bodyMaybe }) {
+        // TODO check for duplicate name
         return Brand
         .forge(bodyMaybe)
         .save()
@@ -57,6 +58,7 @@ export default makeResource({
       role: 'super',
       schema,
       makeResponse({ idMaybe }) {
+        // TODO check for duplicate name
         return Brand
         .where('id', idMaybe)
         .fetch({
@@ -76,8 +78,24 @@ export default makeResource({
       method: methods.DELETE,
       role: 'super',
       makeResponse({ idMaybe }) {
-        // TODO
-        return null
+        return Brand
+        .where('id', idMaybe)
+        .fetch({
+          require: true,
+          withRelated: ['parts']
+        })
+        .catch(catchNotFound)
+        .then((brand) => {
+          if (!brand.related('parts').isEmpty()) {
+            return Promise.reject(new ApiError(400, 'Cannot delete, brand has dependent parts'))
+          }
+
+          return brand
+        })
+        .then((brand) => {
+          return brand.destroy({ require: true })
+        })
+        .then((b) => null)
       }
     },
   ]
