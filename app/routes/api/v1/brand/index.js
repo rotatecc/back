@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { ApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Brand } from 'models'
 
@@ -48,7 +48,7 @@ export default makeResource({
         .fetch()
         .then((b) => {
           if (b) {
-            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+            return Promise.reject(makeApiError(400, 'Brand with name already exists'))
           }
         })
         .then(() => {
@@ -70,7 +70,7 @@ export default makeResource({
         .fetch()
         .then((b) => {
           if (b && b.get('id') !== idMaybe) {
-            return Promise.reject(new ApiError(400, 'Brand with name already exists'))
+            return Promise.reject(makeApiError(400, 'Brand with name already exists'))
           }
         })
         .then(() => {
@@ -102,7 +102,7 @@ export default makeResource({
         .catch(catchNotFound)
         .then((brand) => {
           if (!brand.related('parts').isEmpty()) {
-            return Promise.reject(new ApiError(400, 'Cannot delete, brand has dependent parts'))
+            return Promise.reject(makeApiError(400, 'Cannot delete, brand has dependent parts'))
           }
 
           return brand

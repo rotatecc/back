@@ -12,15 +12,13 @@ import config from 'config'
 import { Account } from 'models'
 
 
-export class ApiError {
-  code
-  message
+export function makeApiError(code, message) {
+  const error = new Error(message)
 
-  constructor(code, message) {
-    this.name = 'ApiError'
-    this.code = code
-    this.message = message
-  }
+  error.name = 'ApiError'
+  error.code = code
+
+  return error
 }
 
 
@@ -51,7 +49,7 @@ export function stdResponse(res) {
 
 export function stdErrorResponse(res) {
   return (err) => {
-    if (err instanceof ApiError) {
+    if (err instanceof Error && err.name === 'ApiError') {
       res.status(err.code)
       res.json(jsonResponse(false, err.code, err.message))
     } else if (err instanceof Error && err.isJoi) {
@@ -117,12 +115,12 @@ export function makeSingleOrReject(results) {
     return results[0]
   }
 
-  return Promise.reject(new ApiError(404))
+  return Promise.reject(makeApiError(404))
 }
 
 
 export function catchNotFound(err) {
-  return Promise.reject((err instanceof ApiError) ? err : new ApiError(404))
+  return Promise.reject((err instanceof Error && err.name === 'ApiError') ? err : makeApiError(404))
 }
 
 
@@ -146,7 +144,7 @@ export function validate(schema, data) {
 export function reqWithId(req) {
   return validate(Joi.number().integer().positive().required(), req.params.id)
     .catch(err => {
-      return Promise.reject(new ApiError(400, 'Bad id'))
+      return Promise.reject(makeApiError(400, 'Bad id'))
     })
 }
 
@@ -154,7 +152,7 @@ export function reqWithId(req) {
 export function reqWithPage(req) {
   return validate(Joi.number().integer().positive().required(), req.query.page)
     .catch(err => {
-      return Promise.reject(new ApiError(400, 'Bad page'))
+      return Promise.reject(makeApiError(400, 'Bad page'))
     })
     .then((page) => {
       req.query.page = page // replace with parsed
@@ -168,7 +166,7 @@ export function authenticate(email, password) {
     algorithm: 'HS256' // TODO replace with RS256 + .pem file
   }
 
-  const badAccountError = new ApiError(401, 'Bad email or password')
+  const badAccountError = makeApiError(401, 'Bad email or password')
 
   // find account
 
@@ -186,7 +184,7 @@ export function authenticate(email, password) {
     // check account status === okay
 
     if (account.status.slug !== 'okay') {
-      return Promise.reject(new ApiError(403, 'You are bannedd'))
+      return Promise.reject(makeApiError(403, 'You are bannedd'))
     }
 
     return account
@@ -197,7 +195,7 @@ export function authenticate(email, password) {
     return new Promise((resolve, reject) => {
       bcrypt.compare(password, account.get('password'), (err, res) => {
         if (err) {
-          return Promise.reject(new ApiError(500, 'Password hashing failed'))
+          return Promise.reject(makeApiError(500, 'Password hashing failed'))
         }
 
         if (!res) {
@@ -221,7 +219,7 @@ export function authenticate(email, password) {
       jwt.sign(payload, config.jwtSecret, jwtOptions, (err, token) => {
         if (err) {
           // we're at fault
-          reject(new ApiError(500, 'Could not sign token'))
+          reject(makeApiError(500, 'Could not sign token'))
         }
 
         resolve(token)
@@ -263,24 +261,24 @@ export function verifyAuthAndRole(req, minRole = true) {
   const token = req.headers['x-access-token']
 
   if (!token) {
-    return Promise.reject(new ApiError(401, 'Auth token not supplied'))
+    return Promise.reject(makeApiError(401, 'Auth token not supplied'))
   }
 
   return new Promise((resolve, reject) => {
     jwt.verify(token, config.jwtSecret, (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
-          reject(new ApiError(440, 'Auth token expired'))
+          reject(makeApiError(440, 'Auth token expired'))
         }
 
         // This is a JsonWebTokenError (jwt malformed, bad signature, etc)
-        reject(new ApiError(401, err.message))
+        reject(makeApiError(401, err.message))
       }
 
       // jwt is good, now for the role...
       if (!roleMeetsRequirement(decoded.roleSlug, minRole)) {
         // send 403 forbidden (authenticated, but forbidden)
-        reject(new ApiError(403))
+        reject(makeApiError(403))
       }
 
       // all set!
@@ -307,7 +305,7 @@ export function preparePaginatedResult({ models, pagination }) {
 // Assumes req.currentAccount has been set, if not, fail
 export function verifyOwnership(resource, req, accountIdGetter = ((r) => r.get('account_id'))) {
   if (!req.currentAccount || req.currentAccount.id !== accountIdGetter(resource)) {
-    return Promise.reject(new ApiError(403))
+    return Promise.reject(makeApiError(403))
   }
 
   return Promise.resolve(resource)

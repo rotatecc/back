@@ -3,7 +3,7 @@ import Promise from 'bluebird'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { ApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Account, Status } from 'models'
 
@@ -82,7 +82,7 @@ export function setAccountStatus(userId, isBanned) {
   .catch(catchNotFound)
   .spread((status, account) => {
     if (account.related('role').get('slug') === 'super') {
-      return Promise.reject(new ApiError(400, 'Cannot set status of super-admin'))
+      return Promise.reject(makeApiError(400, 'Cannot set status of super-admin'))
     }
 
     account.set('status_id', status.get('id'))

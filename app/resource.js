@@ -3,7 +3,7 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import {
-  ApiError,
+  makeApiError,
   makePromiseHandler,
   validate,
   reqWithId,

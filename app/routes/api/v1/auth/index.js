@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import makeResource, { methods } from 'resource'
-import { authenticate, ApiError, hash, catchNotFound, makeOwnershipVerifier } from 'utils'
+import { authenticate, makeApiError, hash, catchNotFound, makeOwnershipVerifier } from 'utils'
 
 import { Account, Role, Status } from 'models'
 
@@ -24,7 +24,7 @@ export default makeResource({
           // Verify uniqueness
 
           if (r) {
-            return Promise.reject(new ApiError(400, 'Account with email already exists'))
+            return Promise.reject(makeApiError(400, 'Account with email already exists'))
           }
         })
         .then(() => {
@@ -40,7 +40,7 @@ export default makeResource({
 
           return hash(bodyMaybe.password)
           .catch((err) => {
-            return Promise.reject(new ApiError(500, `Password hashing failed: ${err.message}`))
+            return Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`))
           })
           .then((password) => [role, status, password])
         })
@@ -100,7 +100,7 @@ export default makeResource({
       prepareBody({ password }) {
         return hash(password)
         .catch((err) => {
-          return Promise.reject(new ApiError(500, `Password hashing failed: ${err.message}`))
+          return Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`))
         })
         // put hashed password under password key
         .then((password) => ({ password }))
