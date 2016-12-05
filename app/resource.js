@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import _ from 'lodash'
+import Promise from 'bluebird'
 
 import {
   ApiError,

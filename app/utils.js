@@ -6,6 +6,7 @@ import _ from 'lodash'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import Joi from 'joi'
+import Promise from 'bluebird'
 
 import config from 'config'
 import { Account } from 'models'

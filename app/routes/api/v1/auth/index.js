@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import Promise from 'bluebird'
 
 import makeResource, { methods } from 'resource'
 import { authenticate, ApiError, catchNotFound, makeOwnershipVerifier } from 'utils'
@@ -37,7 +38,7 @@ export default makeResource({
       method: methods.POST,
       role: false,
       schema: { email: schema.email, password: schema.password_login },
-      makeResponse({ bodyMaybe }) => {
+      makeResponse({ bodyMaybe }) {
         const { email, password } = bodyMaybe
         return authenticate(email, password)
       }

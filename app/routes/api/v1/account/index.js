@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import Promise from 'bluebird'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
