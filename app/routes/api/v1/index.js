@@ -14,6 +14,7 @@ const endpoints = [
   'brand',
   'spec',
   'btag',
+  'ptype',
 ]
 
 endpoints.forEach((endpoint) => {
