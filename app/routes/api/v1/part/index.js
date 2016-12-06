@@ -43,12 +43,18 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        // TODO validate existence of ptype and brand
-
-        // Forge new Part
-        return Part
-        .forge(bodyMaybe)
-        .save()
+        // verify existence of ptype and brand
+        return Promise.all([
+          PType.where({ id: bodyMaybe.ptype_id }).fetch({ require: true }),
+          Brand.where({ id: bodyMaybe.brand_id }).fetch({ require: true }),
+        ])
+        .catch(catchNotFound)
+        .then(() => {
+          // Forge new Part
+          return Part
+          .forge(bodyMaybe)
+          .save()
+        })
       },
     },
 
@@ -57,13 +63,19 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        // TODO validate existence of ptype and brand
-
-        return Part
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: []
+        // verify existence of ptype and brand
+        return Promise.all([
+          PType.where({ id: bodyMaybe.ptype_id }).fetch({ require: true }),
+          Brand.where({ id: bodyMaybe.brand_id }).fetch({ require: true }),
+        ])
+        .then(() => {
+          // find part
+          return Part
+          .where('id', idMaybe)
+          .fetch({
+            require: true,
+            withRelated: []
+          })
         })
         .catch(catchNotFound)
         .then((part) => {
