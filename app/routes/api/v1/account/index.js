@@ -79,7 +79,7 @@ export function setAccountStatus(userId, isBanned) {
       require: true
     })
   ])
-  .catch(catchNotFound)
+  .catch(catchNotFound())
   .spread((status, account) => {
     if (account.related('role').get('slug') === 'super') {
       return Promise.reject(makeApiError(400, 'Cannot set status of super-admin'))

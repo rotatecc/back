@@ -83,7 +83,7 @@ export default makeResource({
         return Account
         .where('id', idMaybe)
         .fetch({ require: true })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then(makeOwnershipVerifier(req, (r) => r.get('id')))
         .then((account) => {
           account.set(bodyMaybe)
@@ -112,7 +112,7 @@ export default makeResource({
           require: true,
           withRelated: ['role', 'status']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then(makeOwnershipVerifier(req, (r) => r.get('id')))
         .then((account) => {
           // set new hashed password (see prepareBody above)

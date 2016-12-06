@@ -119,8 +119,14 @@ export function makeSingleOrReject(results) {
 }
 
 
-export function catchNotFound(err) {
-  return Promise.reject((err instanceof Error && err.name === 'ApiError') ? err : makeApiError(404))
+export function catchNotFound(message = null) {
+  return (err) => {
+    const error = (err instanceof Error && err.name === 'ApiError')
+      ? err // an ApiError was already thrown, so just forward it as a rejection
+      : makeApiError(404, message) // assume it's a 404
+
+    return Promise.reject(error)
+  }
 }
 
 

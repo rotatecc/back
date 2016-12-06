@@ -81,7 +81,7 @@ export default makeResource({
             withRelated: []
           })
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((brand) => {
           brand.set(bodyMaybe)
           return brand.save()
@@ -99,7 +99,7 @@ export default makeResource({
           require: true,
           withRelated: ['parts']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((brand) => {
           if (!brand.related('parts').isEmpty()) {
             return Promise.reject(makeApiError(400, 'Cannot delete, brand has dependent parts'))

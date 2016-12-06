@@ -81,7 +81,7 @@ export default makeResource({
             withRelated: []
           })
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((spec) => {
           spec.set(bodyMaybe)
           return spec.save()
@@ -99,7 +99,7 @@ export default makeResource({
           require: true,
           withRelated: ['parts', 'pvariations']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((spec) => {
           if (!spec.related('parts').isEmpty()) {
             return Promise.reject(makeApiError(400, 'Cannot delete, spec has dependent parts'))

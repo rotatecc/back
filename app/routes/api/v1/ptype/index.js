@@ -81,7 +81,7 @@ export default makeResource({
             withRelated: []
           })
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((ptype) => {
           ptype.set(bodyMaybe)
           return ptype.save()
@@ -99,7 +99,7 @@ export default makeResource({
           require: true,
           withRelated: ['parts']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((ptype) => {
           if (!ptype.related('parts').isEmpty()) {
             return Promise.reject(makeApiError(400, 'Cannot delete, ptype has dependent parts'))

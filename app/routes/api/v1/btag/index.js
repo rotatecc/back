@@ -81,7 +81,7 @@ export default makeResource({
             withRelated: []
           })
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((btag) => {
           btag.set(bodyMaybe)
           return btag.save()
@@ -99,7 +99,7 @@ export default makeResource({
           require: true,
           withRelated: ['builds']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((btag) => {
           if (!btag.related('builds').isEmpty()) {
             return Promise.reject(makeApiError(400, 'Cannot delete, btag has dependent builds'))

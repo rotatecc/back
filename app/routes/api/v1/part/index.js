@@ -1,8 +1,9 @@
+import _ from 'lodash'
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
-import { Part } from 'models'
+import { Part, PType, Brand } from 'models'
 
 import schema from './schema'
 
@@ -45,14 +46,19 @@ export default makeResource({
       makeResponse({ bodyMaybe }) {
         // verify existence of ptype and brand
         return Promise.all([
-          PType.where({ id: bodyMaybe.ptype_id }).fetch({ require: true }),
-          Brand.where({ id: bodyMaybe.brand_id }).fetch({ require: true }),
+          PType
+            .where({ id: bodyMaybe.ptype_id })
+            .fetch({ require: true })
+            .catch(catchNotFound('PType not found')),
+          Brand
+            .where({ id: bodyMaybe.brand_id })
+            .fetch({ require: true })
+            .catch(catchNotFound('Brand not found')),
         ])
-        .catch(catchNotFound)
         .then(() => {
           // Forge new Part
           return Part
-          .forge(bodyMaybe)
+          .forge(_.omit(bodyMaybe, ['specs', 'pvariations']))
           .save()
         })
       },
@@ -77,7 +83,7 @@ export default makeResource({
             withRelated: []
           })
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((part) => {
           part.set(bodyMaybe)
           return part.save()
@@ -95,7 +101,7 @@ export default makeResource({
           require: true,
           withRelated: ['specs', 'pvariations', 'comments', 'reviews']
         })
-        .catch(catchNotFound)
+        .catch(catchNotFound())
         .then((part) => {
           // TODO
           // remove the below checks, instead just cascade deletes for each
