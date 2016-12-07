@@ -5,14 +5,18 @@ const idSchema = Joi.number().positive().integer().required()
 
 const stringAllowEmptySchema = Joi.string().allow('')
 
-const specsSchema = Joi.array().items(Joi.object({ spec_id: idSchema, value: Joi.string().required() }))
+const specsSchema = Joi.array().items(Joi.object().keys({
+  spec_id: idSchema.optional(),
+  spec_name: Joi.string(),
+  value: Joi.string().required()
+}).xor('spec_id', 'spec_name')) // must contain exactly one of spec_id, spec_name
 
 export default {
   name: Joi.string().min(2).required(),
   manu_id: stringAllowEmptySchema.required(),
   manu_description: stringAllowEmptySchema.required(),
   our_note: stringAllowEmptySchema.required(),
-  date_released: Joi.date().iso().allow('').required(),
+  date_released: Joi.date().iso().allow(null).required(),
 
   // belongsTo relations
   ptype_id: idSchema,

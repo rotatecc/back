@@ -70,6 +70,8 @@ export function stdErrorResponse(res) {
         ? `DEV ERROR: ${err.message}`
         : 'Internal server error'
 
+      console.error(err)
+
       res.status(500)
       res.json(jsonResponse(false, 500, message))
     } else {
