@@ -8,6 +8,7 @@ import {
   reqWithId,
   reqWithPage,
   verifyAuthAndRole,
+  parseSearchParam,
 } from 'utils'
 
 
@@ -67,6 +68,16 @@ export default function makeResource({ endpoints }) {
 
         if (ep.method === methods.GET && ep.getType === 'paginate') {
           return reqWithPage(req)
+        }
+
+        return Promise.resolve()
+      })
+      .then(() => {
+        // If this is a get request and getType is paginate or all, then attempt
+        // to parse the ?search query parameter
+
+        if (ep.method === methods.GET && ['paginate', 'all'].includes(ep.getType)) {
+          return parseSearchParam(req)
         }
 
         return Promise.resolve()

@@ -150,19 +150,33 @@ export function validate(schema, data) {
 export function reqWithId(req) {
   return validate(Joi.number().integer().positive().required(), req.params.id)
   .catch(() =>
-    Promise.reject(makeApiError(400, 'Bad id')))
+    Promise.reject(makeApiError(400, 'Bad id in URI')))
 }
 
 
 export function reqWithPage(req) {
   return validate(Joi.number().integer().positive().required(), req.query.page)
-    .catch(() =>
-      Promise.reject(makeApiError(400, 'Bad page')))
-    .then((page) => {
-      // mutate req.query.page with parsed int
-      req.query.page = page // eslint-disable-line no-param-reassign
-      return Promise.resolve()
-    })
+  .catch(() =>
+    Promise.reject(makeApiError(400, 'Bad page parameter')))
+  .then((page) => {
+    // mutate req.query.page with parsed int
+    req.query.page = page // eslint-disable-line no-param-reassign
+    return Promise.resolve()
+  })
+}
+
+
+export function parseSearchParam(req) {
+  // ?search can be missing, but if it's there, it can't be blank
+  return validate(Joi.string().optional(), req.query.search)
+  .catch(() =>
+    Promise.reject(makeApiError(400, 'Bad search parameter')))
+  .then((search) => {
+    if (typeof search !== 'string') {
+      req.query.search = search // eslint-disable-line no-param-reassign
+    }
+    return Promise.resolve()
+  })
 }
 
 
