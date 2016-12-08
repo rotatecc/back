@@ -50,13 +50,14 @@ export default makeResource({
           if (b) {
             return Promise.reject(makeApiError(400, 'PType with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
+        .then(() =>
           // Forge new PType
-          return PType
+          PType
           .forge(bodyMaybe)
-          .save()
-        })
+          .save())
       },
     },
 
@@ -72,21 +73,22 @@ export default makeResource({
           if (b && b.get('id') !== idMaybe) {
             return Promise.reject(makeApiError(400, 'PType with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
-          return PType
+        .then(() =>
+          PType
           .where('id', idMaybe)
           .fetch({
             require: true,
-            withRelated: []
-          })
-        })
+            withRelated: [],
+          }))
         .catch(catchNotFound())
         .then((ptype) => {
           ptype.set(bodyMaybe)
           return ptype.save()
         })
-      }
+      },
     },
 
     {
@@ -97,7 +99,7 @@ export default makeResource({
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['parts']
+          withRelated: ['parts'],
         })
         .catch(catchNotFound())
         .then((ptype) => {
@@ -107,11 +109,10 @@ export default makeResource({
 
           return ptype
         })
-        .then((ptype) => {
-          return ptype.destroy({ require: true })
-        })
-        .then((b) => null)
-      }
+        .then((ptype) =>
+          ptype.destroy({ require: true }))
+        .then(() => null)
+      },
     },
-  ]
+  ],
 })

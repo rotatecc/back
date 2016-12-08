@@ -26,42 +26,38 @@ export default makeResource({
           if (r) {
             return Promise.reject(makeApiError(400, 'Account with email already exists'))
           }
-        })
-        .then(() => {
-          // Get default role and status first
 
-          return Promise.all([
+          return null
+        })
+        .then(() =>
+          // Get default role and status first
+          Promise.all([
             Role.where('slug', 'user').fetch({ require: true }),
             Status.where('slug', 'okay').fetch({ require: true }),
-          ])
-        })
-        .spread((role, status) => {
+          ]))
+        .spread((role, status) =>
           // Hash password
-
-          return hash(bodyMaybe.password)
-          .catch((err) => {
-            return Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`))
-          })
-          .then((password) => [role, status, password])
-        })
-        .spread((role, status, password) => {
+          hash(bodyMaybe.password)
+          .catch((err) =>
+            Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`)))
+          .then((password) => [role, status, password]),
+        )
+        .spread((role, status, password) =>
           // Forge new account
 
-          return Account
+          Account
           .forge({
             ...bodyMaybe,
             password,
             role_id: role.get('id'),
-            status_id: status.get('id')
+            status_id: status.get('id'),
           })
           .save()
-          .then((account) => {
+          .then((account) =>
             // TODO enqueue new account registration email
 
-            return account
-          })
-        })
-      }
+            account))
+      },
     },
 
     {
@@ -72,14 +68,14 @@ export default makeResource({
       makeResponse({ bodyMaybe }) {
         const { email, password } = bodyMaybe
         return authenticate(email, password)
-      }
+      },
     },
 
     {
       method: methods.PATCH,
       role: 'user',
       schema: _.pick(schema, ['email', 'display']),
-      makeResponse({ idMaybe, bodyMaybe }) {
+      makeResponse({ req, idMaybe, bodyMaybe }) {
         return Account
         .where('id', idMaybe)
         .fetch({ require: true })
@@ -99,18 +95,17 @@ export default makeResource({
       schema: _.pick(schema, ['password', 'password_confirmation']),
       prepareBody({ password }) {
         return hash(password)
-        .catch((err) => {
-          return Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`))
-        })
+        .catch((err) =>
+          Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`)))
         // put hashed password under password key
-        .then((password) => ({ password }))
+        .then((passwordHashed) => ({ password: passwordHashed }))
       },
       makeResponse({ req, idMaybe, bodyMaybe }) {
         return Account
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['role', 'status']
+          withRelated: ['role', 'status'],
         })
         .catch(catchNotFound())
         .then(makeOwnershipVerifier(req, (r) => r.get('id')))
@@ -121,5 +116,5 @@ export default makeResource({
         })
       },
     },
-  ]
+  ],
 })

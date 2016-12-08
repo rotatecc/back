@@ -3,14 +3,11 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import {
-  makeApiError,
   makePromiseHandler,
   validate,
   reqWithId,
   reqWithPage,
-  hash,
-  makeSingleOrReject,
-  verifyAuthAndRole
+  verifyAuthAndRole,
 } from 'utils'
 
 
@@ -36,25 +33,24 @@ export default function makeResource({ endpoints }) {
       methods.HEAD,
       methods.PUT,
       methods.PATCH,
-      methods.DELETE
+      methods.DELETE,
     ].includes(ep.method) || (ep.method === methods.GET && ep.getType === 'single'))
 
     const hasBody = ([
       methods.PUT,
       methods.POST,
-      methods.PATCH
+      methods.PATCH,
     ]).includes(ep.method)
 
     const path = (requiresId ? '/:id' : '') + (ep.suffix || '')
 
-    r[ep.method](path, makePromiseHandler((req) => {
-      return Promise.resolve()
-      .then(() => {
+    r[ep.method](path, makePromiseHandler((req) =>
+      Promise.resolve()
+      .then(() =>
         // check auth + role
         // (mutates req.currentAccount if ep.role is not false and everything checks out)
 
-        return verifyAuthAndRole(req, ep.role)
-      })
+        verifyAuthAndRole(req, ep.role))
       .then(() => {
         // if needed, check that req.params.id exists
         // and that it's an integer
@@ -109,8 +105,7 @@ export default function makeResource({ endpoints }) {
           idMaybe,
           bodyMaybe,
         })
-      })
-    }))
+      })))
   }
 
   return r

@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import Promise from 'bluebird'
 
 import config from 'config'
@@ -6,8 +5,6 @@ import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Account, Status } from 'models'
-
-import schema from './schema'
 
 
 // NOTE
@@ -63,9 +60,9 @@ export default makeResource({
       makeResponse({ idMaybe }) {
         // see below
         return setAccountStatus(idMaybe, false)
-      }
-    }
-  ]
+      },
+    },
+  ],
 })
 
 
@@ -76,8 +73,8 @@ export function setAccountStatus(userId, isBanned) {
     .where({ id: userId })
     .fetch({
       withRelated: ['role', 'status'],
-      require: true
-    })
+      require: true,
+    }),
   ])
   .catch(catchNotFound())
   .spread((status, account) => {

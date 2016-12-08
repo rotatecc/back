@@ -15,7 +15,7 @@ const standardRelated = [
   'brand',
   'specs',
   'pvariations',
-  'pvariations.specs'
+  'pvariations.specs',
 ]
 
 
@@ -28,7 +28,7 @@ const standardRelatedAll = [
 
 const standardRelatedCompact = [
   'ptype',
-  'brand'
+  'brand',
 ]
 
 
@@ -69,20 +69,17 @@ export default makeResource({
       schema,
       makeResponse({ bodyMaybe }) {
         return verifyDirectPartRelationsExist(bodyMaybe)
-        .then(() => {
+        .then(() =>
           // Forge new part
-          return Part
+          Part
           .forge(_.omit(bodyMaybe, ['specs', 'pvariations']))
-          .save()
-        })
-        .then((part) => {
-          return preparePartDependencies(part, bodyMaybe)
-        })
-        .then((part) => {
+          .save())
+        .then((part) =>
+          preparePartDependencies(part, bodyMaybe))
+        .then((part) =>
           // Everything went well,
           // so just return the new part with fresh-loaded relations
-          return part.load(standardRelated)
-        })
+          part.load(standardRelated))
       },
     },
 
@@ -110,7 +107,7 @@ export default makeResource({
           part.set(_.omit(bodyMaybe, ['specs', 'pvariations']))
           return part.save()
         })
-      }
+      },
     },
 
     {
@@ -146,13 +143,12 @@ export default makeResource({
 
           return part
         })
-        .then((part) => {
-          return part.destroy({ require: true })
-        })
-        .then((b) => null)
-      }
+        .then((part) =>
+          part.destroy({ require: true }))
+        .then(() => null)
+      },
     },
-  ]
+  ],
 })
 
 
@@ -185,41 +181,37 @@ export function findOrForgeSpecs(specs) {
       .where('id', spec_id)
       .fetch({ require: true })
       .catch(catchNotFound(`Spec with id ${spec_id} not found`))
-      .then((spec) => {
-        return { spec, value }
-      })
+      .then((spec) =>
+        ({ spec, value }))
     } else if (spec_name) {
       // Try to find spec by name (probably no match most of the time)
       return Spec
       .where('name', spec_name)
       .fetch({ require: true })
-      .catch(() => {
+      .catch(() =>
         // Spec doesn't exist (as expected), so forge it
-        return Spec
+        Spec
         .forge({ name: spec_name })
-        .save()
-      })
-      .then((spec) => {
-        return { spec, value }
-      })
+        .save())
+      .then((spec) =>
+        ({ spec, value }))
     }
 
     // Branch not really reachable due to Joi schema xor validation,
     // but just in case...
-    return Promise.reject(new ApiError(400, 'Spec was missing exactly one of [spec_id, spec_name]'))
+    return Promise.reject(makeApiError(400, 'Spec was missing exactly one of [spec_id, spec_name]'))
   }))
 }
 
 
 // Attach Specs to a model (probably Part or PVariation), with values for each
 export function attachSpecs(specCombos, model, model_key) {
-  return model.specs().attach(specCombos.map(({ spec, value }) => {
-    return {
+  return model.specs().attach(specCombos.map(({ spec, value }) =>
+    ({
       [model_key]: model.get('id'),
       spec_id: spec.get('id'),
-      value
-    }
-  }))
+      value,
+    })))
 }
 
 
@@ -227,9 +219,8 @@ export function attachSpecs(specCombos, model, model_key) {
 export function preparePartDependencies(part, body) {
   // Create or find each Spec, then attach all of them to this Part
   const specsAttachPromise = findOrForgeSpecs(body.specs)
-  .then((specCombos) => {
-    return attachSpecs(specCombos, part, 'part_id')
-  })
+  .then((specCombos) =>
+    attachSpecs(specCombos, part, 'part_id'))
 
   // Create or find each PVariation
   const pvariationsPromise = Promise.all(body.pvariations.map(({ pvariation_id, specs }) => {
@@ -250,15 +241,14 @@ export function preparePartDependencies(part, body) {
     // Create or find each Spec, then attach all of them to this PVariation
     .then((pvariation) => {
       return findOrForgeSpecs(specs)
-      .then((specCombos) => {
-        return attachSpecs(specCombos, pvariation, 'pvariation_id')
-      })
+      .then((specCombos) =>
+        attachSpecs(specCombos, pvariation, 'pvariation_id'))
     })
   }))
 
   return Promise.all([
     specsAttachPromise,
-    pvariationsPromise
+    pvariationsPromise,
   ])
   .then(() => part)
 }

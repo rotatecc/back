@@ -26,7 +26,7 @@ export function jsonResponse(success, dataOrErrorCode, errorMessageMaybe) {
   if (success) {
     return {
       success: true,
-      data: dataOrErrorCode
+      data: dataOrErrorCode,
     }
   }
 
@@ -34,8 +34,8 @@ export function jsonResponse(success, dataOrErrorCode, errorMessageMaybe) {
     success: false,
     error: {
       code: dataOrErrorCode,
-      message: errorMessageMaybe || config.standardHttpStatusCodes[dataOrErrorCode] || "Unknown error"
-    }
+      message: errorMessageMaybe || config.standardHttpStatusCodes[dataOrErrorCode] || 'Unknown error',
+    },
   }
 }
 
@@ -70,8 +70,6 @@ export function stdErrorResponse(res) {
         ? `DEV ERROR: ${err.message}`
         : 'Internal server error'
 
-      console.error(err)
-
       res.status(500)
       res.json(jsonResponse(false, 500, message))
     } else {
@@ -95,11 +93,11 @@ export function hash(password) {
   // promise-ify bcrypt hash
 
   return new Promise((resolve, reject) => {
-    bcrypt.hash(password, config.bcryptSaltRounds, function(err, hash) {
+    bcrypt.hash(password, config.bcryptSaltRounds, (err, passwordHashed) => {
       if (err) {
         reject(err)
       } else {
-        resolve(hash)
+        resolve(passwordHashed)
       }
     })
   })
@@ -151,17 +149,15 @@ export function validate(schema, data) {
 
 export function reqWithId(req) {
   return validate(Joi.number().integer().positive().required(), req.params.id)
-    .catch(err => {
-      return Promise.reject(makeApiError(400, 'Bad id'))
-    })
+  .catch(() =>
+    Promise.reject(makeApiError(400, 'Bad id')))
 }
 
 
 export function reqWithPage(req) {
   return validate(Joi.number().integer().positive().required(), req.query.page)
-    .catch(err => {
-      return Promise.reject(makeApiError(400, 'Bad page'))
-    })
+    .catch(() =>
+      Promise.reject(makeApiError(400, 'Bad page')))
     .then((page) => {
       req.query.page = page // replace with parsed
       return Promise.resolve()
@@ -171,7 +167,7 @@ export function reqWithPage(req) {
 
 export function authenticate(email, password) {
   const jwtOptions = {
-    algorithm: 'HS256' // TODO replace with RS256 + .pem file
+    algorithm: 'HS256', // TODO replace with RS256 + .pem file
   }
 
   const badAccountError = makeApiError(401, 'Bad email or password')
@@ -197,10 +193,10 @@ export function authenticate(email, password) {
 
     return account
   })
-  .then((account) => {
+  .then((account) =>
     // verify password
 
-    return new Promise((resolve, reject) => {
+    new Promise((resolve, reject) => {
       bcrypt.compare(password, account.get('password'), (err, res) => {
         if (err) {
           return Promise.reject(makeApiError(500, 'Password hashing failed'))
@@ -214,14 +210,13 @@ export function authenticate(email, password) {
         // continue with account as obj
         return resolve(account.toJSON())
       })
-    })
-  })
-  .then((account) => {
-    return new Promise((resolve, reject) => {
+    }))
+  .then((account) =>
+    new Promise((resolve, reject) => {
       const payload = Object.assign(
         {},
         _.omit(account, ['role', 'status', 'role_id', 'status_id']),
-        { roleSlug: account.role.slug }
+        { roleSlug: account.role.slug },
       )
 
       jwt.sign(payload, config.jwtSecret, jwtOptions, (err, token) => {
@@ -232,8 +227,7 @@ export function authenticate(email, password) {
 
         resolve(token)
       })
-    })
-  })
+    }))
 }
 
 
@@ -323,7 +317,6 @@ export function verifyOwnership(resource, req, accountIdGetter = ((r) => r.get('
 // Makes a handler that verifies the current account's ownership over a resource
 // Assumes req.currentAccount has been set, if not, fail
 export function makeOwnershipVerifier(req, accountIdGetter) {
-  return (resource) => {
-    return verifyOwnership(resource, req, accountIdGetter)
-  }
+  return (resource) =>
+    verifyOwnership(resource, req, accountIdGetter)
 }

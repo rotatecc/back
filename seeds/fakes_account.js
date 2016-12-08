@@ -12,15 +12,14 @@ exports.seed = function(knex, Promise) {
         { name: 'three', role: 1, status: 1 },
         { name: 'four', role: 1, status: 1 },
       ].map(function (fields) {
-        return hash(fields.name).then((passwordHashed) => {
-          return knex(tableName).insert({
+        return hash(fields.name).then((passwordHashed) =>
+          knex(tableName).insert({
             email: fields.name + '@rotate.cc',
             display: fields.name,
             password: passwordHashed,
             role_id: fields.role,
             status_id: fields.status,
-          })
-        })
+          }))
       }))
     })
 }

@@ -50,13 +50,14 @@ export default makeResource({
           if (b) {
             return Promise.reject(makeApiError(400, 'BTag with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
+        .then(() =>
           // Forge new BTag
-          return BTag
+          BTag
           .forge(bodyMaybe)
-          .save()
-        })
+          .save())
       },
     },
 
@@ -72,21 +73,22 @@ export default makeResource({
           if (b && b.get('id') !== idMaybe) {
             return Promise.reject(makeApiError(400, 'BTag with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
-          return BTag
+        .then(() =>
+          BTag
           .where('id', idMaybe)
           .fetch({
             require: true,
-            withRelated: []
-          })
-        })
+            withRelated: [],
+          }))
         .catch(catchNotFound())
         .then((btag) => {
           btag.set(bodyMaybe)
           return btag.save()
         })
-      }
+      },
     },
 
     {
@@ -97,7 +99,7 @@ export default makeResource({
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['builds']
+          withRelated: ['builds'],
         })
         .catch(catchNotFound())
         .then((btag) => {
@@ -107,11 +109,10 @@ export default makeResource({
 
           return btag
         })
-        .then((btag) => {
-          return btag.destroy({ require: true })
-        })
-        .then((b) => null)
-      }
+        .then((btag) =>
+          btag.destroy({ require: true }))
+        .then(() => null)
+      },
     },
-  ]
+  ],
 })

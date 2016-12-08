@@ -24,5 +24,5 @@ app.use('/', routes)
 
 // Start server
 app.listen(port, () => {
-  console.log(`rotate.cc back-end is listening on port ${port}`)
+  console.log(`rotate.cc back-end is listening on port ${port}`) // eslint-disable-line no-console
 })

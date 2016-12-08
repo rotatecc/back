@@ -8,7 +8,7 @@ const stringAllowEmptySchema = Joi.string().allow('')
 const specsSchema = Joi.array().items(Joi.object().keys({
   spec_id: idSchema.optional(),
   spec_name: Joi.string(),
-  value: Joi.string().required()
+  value: Joi.string().required(),
 }).xor('spec_id', 'spec_name')) // must contain exactly one of spec_id, spec_name
 
 export default {
@@ -27,6 +27,6 @@ export default {
 
   pvariations: Joi.array().items(Joi.object({
     pvariation_id: idSchema.optional(), // no id means new, otherwise, it's an update
-    specs: specsSchema
+    specs: specsSchema,
   })),
 }

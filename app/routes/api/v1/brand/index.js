@@ -50,13 +50,14 @@ export default makeResource({
           if (b) {
             return Promise.reject(makeApiError(400, 'Brand with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
+        .then(() =>
           // Forge new Brand
-          return Brand
+          Brand
           .forge(bodyMaybe)
-          .save()
-        })
+          .save())
       },
     },
 
@@ -72,21 +73,22 @@ export default makeResource({
           if (b && b.get('id') !== idMaybe) {
             return Promise.reject(makeApiError(400, 'Brand with name already exists'))
           }
+
+          return null
         })
-        .then(() => {
-          return Brand
+        .then(() =>
+          Brand
           .where('id', idMaybe)
           .fetch({
             require: true,
-            withRelated: []
-          })
-        })
+            withRelated: [],
+          }))
         .catch(catchNotFound())
         .then((brand) => {
           brand.set(bodyMaybe)
           return brand.save()
         })
-      }
+      },
     },
 
     {
@@ -97,7 +99,7 @@ export default makeResource({
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['parts']
+          withRelated: ['parts'],
         })
         .catch(catchNotFound())
         .then((brand) => {
@@ -107,11 +109,10 @@ export default makeResource({
 
           return brand
         })
-        .then((brand) => {
-          return brand.destroy({ require: true })
-        })
-        .then((b) => null)
-      }
+        .then((brand) =>
+          brand.destroy({ require: true }))
+        .then(() => null)
+      },
     },
-  ]
+  ],
 })

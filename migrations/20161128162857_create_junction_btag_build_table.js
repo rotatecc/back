@@ -6,7 +6,7 @@ exports.up = function(knex, Promise) {
 
     table.integer('btag_id').unsigned()
     table.foreign('btag_id').references('id').inTable('btag')
-    
+
     table.integer('build_id').unsigned()
     table.foreign('build_id').references('id').inTable('build')
   })
