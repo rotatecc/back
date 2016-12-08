@@ -46,32 +46,20 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return preparePartDependencies(bodyMaybe)
-        .spread((specCombos, pvariationCombos) => {
+        return verifyDirectPartRelationsExist(bodyMaybe)
+        .then(() => {
           // Forge new part
           return Part
           .forge(_.omit(bodyMaybe, ['specs', 'pvariations']))
           .save()
-          .then((part) => ([specCombos, pvariationCombos, part]))
         })
-        .spread((specCombos, pvariationCombos, part) => {
-          return Promise.all([
-            // Attach specs to part, with values
-            part.specs().attach(specCombos.map(({ spec, value }) => {
-              return {
-                part_id: part.get('id'),
-                spec_id: spec.get('id'),
-                value
-              }
-            })),
-            // Attach pvariations to part, with values
-            // TODO
-          ])
-          .then(() => {
-            // Assuming everything went well, just return the new part
-            // TODO load new relations
-            return part.load(['specs', 'pvariations'])
-          })
+        .then((part) => {
+          return preparePartDependencies(part, bodyMaybe)
+        })
+        .then((part) => {
+          // Everything went well,
+          // so just return the new part with fresh-loaded relations
+          return part.load(['specs', 'pvariations', 'pvariations.specs'])
         })
       },
     },
@@ -146,76 +134,109 @@ export default makeResource({
 })
 
 
-export function preparePartDependencies(body) {
-  // verify existence of ptype and brand
+// Verify existence of PType and Brand
+export function verifyDirectPartRelationsExist(body) {
+  const { ptype_id, brand_id } = body
+
   return Promise.all([
     PType
-      .where('id', body.ptype_id)
+      .where('id', ptype_id)
       .fetch({ require: true })
       .catch(catchNotFound('PType not found')),
     Brand
-      .where('id', body.brand_id)
+      .where('id', brand_id)
       .fetch({ require: true })
       .catch(catchNotFound('Brand not found')),
   ])
-  .then(() => {
-    // For each spec, either find it by id or create a new one by name
-    // Wrap it all in a Promise. If a single spec isn't found, or something
-    // else bad happens, everything will fail
-    const specComboPromises = Promise.all(body.specs.map(({ spec_id, spec_name, value }) => {
-      if (spec_id) {
-        // Try to find spec by id
-        return Spec
-        .where('id', spec_id)
-        .fetch({ require: true })
-        .catch(catchNotFound(`Spec with id ${spec_id} not found`))
-        .then((spec) => {
-          return { spec, value }
-        })
-      } else if (spec_name) {
-        // Try to find spec by name (probably no match most of the time)
-        return Spec
-        .where('name', spec_name)
-        .fetch({ require: true })
-        .catch(() => {
-          // Spec doesn't exist (as expected), so make it
-          return Spec
-          .forge({ name: spec_name })
-          .save()
-        })
-        .then((spec) => {
-          return { spec, value }
-        })
-      }
+  .then(() => null)
+}
 
-      // Branch not really reachable due to Joi schema xor validation
-      return Promise.reject(new ApiError(400, 'Spec was missing exactly one of [spec_id, spec_name] key'))
-    }))
 
-    // Do simliar for PVariations
-    const pvariationComboPromises = Promise.all(body.pvariations.map(({ pvariation_id, specs }) => {
+// For each spec, either find it by id or create a new one by name
+// Wrap it all in a Promise. If a single one of the specs isn't found,
+// or something else bad happens, everything will fail
+export function findOrForgeSpecs(specs) {
+  return Promise.all(specs.map(({ spec_id, spec_name, value }) => {
+    if (spec_id) {
+      // Try to find spec by id
+      return Spec
+      .where('id', spec_id)
+      .fetch({ require: true })
+      .catch(catchNotFound(`Spec with id ${spec_id} not found`))
+      .then((spec) => {
+        return { spec, value }
+      })
+    } else if (spec_name) {
+      // Try to find spec by name (probably no match most of the time)
+      return Spec
+      .where('name', spec_name)
+      .fetch({ require: true })
+      .catch(() => {
+        // Spec doesn't exist (as expected), so forge it
+        return Spec
+        .forge({ name: spec_name })
+        .save()
+      })
+      .then((spec) => {
+        return { spec, value }
+      })
+    }
+
+    // Branch not really reachable due to Joi schema xor validation,
+    // but just in case...
+    return Promise.reject(new ApiError(400, 'Spec was missing exactly one of [spec_id, spec_name]'))
+  }))
+}
+
+
+// Attach Specs to a model (probably Part or PVariation), with values for each
+export function attachSpecs(specCombos, model, model_key) {
+  return model.specs().attach(specCombos.map(({ spec, value }) => {
+    return {
+      [model_key]: model.get('id'),
+      spec_id: spec.get('id'),
+      value
+    }
+  }))
+}
+
+
+// Handle a Part's Specs, PVariations, and Specs of PVariations
+export function preparePartDependencies(part, body) {
+  // Create or find each Spec, then attach all of them to this Part
+  const specsAttachPromise = findOrForgeSpecs(body.specs)
+  .then((specCombos) => {
+    return attachSpecs(specCombos, part, 'part_id')
+  })
+
+  // Create or find each PVariation
+  const pvariationsPromise = Promise.all(body.pvariations.map(({ pvariation_id, specs }) => {
+    return (() => {
       if (pvariation_id) {
         // Try to find PVariation by id
         return PVariation
         .where('id', pvariation_id)
         .fetch({ require: true })
         .catch(catchNotFound(`PVariation with id ${pvariation_id} not found`))
-        .then((pvariation) => {
-          return { pvariation, specs }
-        })
       }
 
-      // Create new PVariation
+      // Otherwise, create new PVariation
       return PVariation
-      .forge({})
+      .forge({ part_id: part.get('id') })
       .save()
-      .then((pvariation) => {
-        // TODO find or create each spec
-
-        return { pvariation, specs }
+    })()
+    // Create or find each Spec, then attach all of them to this PVariation
+    .then((pvariation) => {
+      return findOrForgeSpecs(specs)
+      .then((specCombos) => {
+        return attachSpecs(specCombos, pvariation, 'pvariation_id')
       })
-    }))
+    })
+  }))
 
-    return Promise.all([specComboPromises, pvariationComboPromises])
-  })
+  return Promise.all([
+    specsAttachPromise,
+    pvariationsPromise
+  ])
+  .then(() => part)
 }
