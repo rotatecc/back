@@ -70,7 +70,7 @@ export default makeResource({
       method: methods.PUT,
       role: 'super',
       makeResponse({ idMaybe }) {
-        // see below
+        // See below
         return setAccountStatus(idMaybe, true)
       },
     },
@@ -80,7 +80,7 @@ export default makeResource({
       method: methods.PUT,
       role: 'super',
       makeResponse({ idMaybe }) {
-        // see below
+        // See below
         return setAccountStatus(idMaybe, false)
       },
     },

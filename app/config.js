@@ -13,7 +13,7 @@ config.isDevelopment = config.env === 'development'
 config.jwtSecret = 'secret' // TODO
 
 config.standardHttpStatusCodes = {
-  // TODO
+  // TODO more
   400: 'Bad Request',
   403: 'Forbidden',
   404: 'Not Found',

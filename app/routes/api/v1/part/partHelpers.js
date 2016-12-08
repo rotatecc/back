@@ -21,9 +21,9 @@ export function verifyDirectPartRelationsExist(body) {
 
 
 // For each spec, either find it by id or create a new one by name
-// Wrap it all in a Promise. If a single one of the specs isn't found,
-// or something else bad happens, everything will fail
 export function findOrForgeSpecs(specs) {
+  // Wrap it all in a Promise. If a single one of the specs isn't found,
+  // or something else bad happens, everything will fail
   return Promise.all(specs.map(({ spec_id, spec_name, value }) => {
     if (spec_id) {
       // Try to find spec by id

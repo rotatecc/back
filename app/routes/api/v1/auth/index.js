@@ -97,7 +97,7 @@ export default makeResource({
         return hash(password)
         .catch((err) =>
           Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`)))
-        // put hashed password under password key
+        // Put hashed password under password key
         .then((passwordHashed) => ({ password: passwordHashed }))
       },
       makeResponse({ req, idMaybe, bodyMaybe }) {
@@ -110,7 +110,7 @@ export default makeResource({
         .catch(catchNotFound())
         .then(makeOwnershipVerifier(req, (r) => r.get('id')))
         .then((account) => {
-          // set new hashed password (see prepareBody above)
+          // Set new hashed password (see prepareBody above)
           account.set(bodyMaybe)
           return account.save()
         })

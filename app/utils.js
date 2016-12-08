@@ -90,7 +90,7 @@ export function makePromiseHandler(handler) {
 
 
 export function hash(password) {
-  // promise-ify bcrypt hash
+  // Promise-ify bcrypt hash
 
   return new Promise((resolve, reject) => {
     bcrypt.hash(password, config.bcryptSaltRounds, (err, passwordHashed) => {
@@ -122,8 +122,8 @@ export function makeSingleOrReject(results) {
 export function catchNotFound(message = null) {
   return (err) => {
     const error = (err instanceof Error && err.name === 'ApiError')
-      ? err // an ApiError was already thrown, so just forward it as a rejection
-      : makeApiError(404, message) // assume it's a 404
+      ? err // An ApiError was already thrown, so just forward it as a rejection
+      : makeApiError(404, message) // Assume it's a 404
 
     return Promise.reject(error)
   }
@@ -173,7 +173,7 @@ export function authenticate(email, password) {
 
   const badAccountError = makeApiError(401, 'Bad email or password')
 
-  // find account
+  // Find account
 
   return Account
   .where({ email })
@@ -186,7 +186,7 @@ export function authenticate(email, password) {
   // same error as giving a bad password:
   .catch(() => Promise.reject(badAccountError))
   .then((account) => {
-    // check account status === okay
+    // Check account status === okay
 
     if (account.status.slug !== 'okay') {
       return Promise.reject(makeApiError(403, 'You are bannedd'))
@@ -195,7 +195,7 @@ export function authenticate(email, password) {
     return account
   })
   .then((account) =>
-    // verify password
+    // Verify password
 
     new Promise((resolve, reject) => {
       bcrypt.compare(password, account.get('password'), (err, res) => {
@@ -204,11 +204,11 @@ export function authenticate(email, password) {
         }
 
         if (!res) {
-          // bad password
+          // Bad password
           return reject(badAccountError)
         }
 
-        // continue with account as obj
+        // Continue with account as obj
         return resolve(account.toJSON())
       })
     }))
@@ -222,7 +222,7 @@ export function authenticate(email, password) {
 
       jwt.sign(payload, config.jwtSecret, jwtOptions, (err, token) => {
         if (err) {
-          // we're at fault
+          // We're at fault
           reject(makeApiError(500, 'Could not sign token'))
         }
 
@@ -278,18 +278,18 @@ export function verifyAuthAndRole(req, minRole = true) {
         reject(makeApiError(401, err.message))
       }
 
-      // jwt is good, now for the role...
+      // JWT is good, now for the role...
       if (!roleMeetsRequirement(decoded.roleSlug, minRole)) {
-        // send 403 forbidden (authenticated, but forbidden)
+        // Send 403 forbidden (authenticated, but forbidden)
         reject(makeApiError(403))
       }
 
-      // all set!
+      // All set!
 
-      // mutate req by setting currentAccount
+      // Mutate req by setting currentAccount
       req.currentAccount = decoded // eslint-disable-line no-param-reassign
 
-      // resolve
+      // Resolve
       resolve(decoded)
     })
   })

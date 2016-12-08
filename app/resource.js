@@ -26,7 +26,7 @@ export default function makeResource({ endpoints }) {
 
   endpoints.forEach((ep) => {
     if (!Object.values(methods).includes(ep.method)) {
-      // skip / continue
+      // Skip this endpoint since the method isn't supported
       return
     }
 
@@ -48,13 +48,12 @@ export default function makeResource({ endpoints }) {
     r[ep.method](path, makePromiseHandler((req) =>
       Promise.resolve()
       .then(() =>
-        // check auth + role
+        // Check auth + role
         // (mutates req.currentAccount if ep.role is not false and everything checks out)
 
         verifyAuthAndRole(req, ep.role))
       .then(() => {
-        // if needed, check that req.params.id exists
-        // and that it's an integer
+        // If needed, check that req.params.id exists and that it's an integer
 
         if (requiresId) {
           return reqWithId(req)
@@ -63,7 +62,7 @@ export default function makeResource({ endpoints }) {
         return Promise.resolve()
       })
       .then(() => {
-        // if we're paginating, make sure ?page is there,
+        // If we're paginating, make sure ?page is there,
         // then mutate req with the parsed page
 
         if (ep.method === methods.GET && ep.getType === 'paginate') {
@@ -73,7 +72,7 @@ export default function makeResource({ endpoints }) {
         return Promise.resolve()
       })
       .then(() => {
-        // if this request has a body, validate it against a schema
+        // If this request has a body, validate it against a schema
 
         if (hasBody && ep.schema) {
           return validate(ep.schema, req.body)
@@ -82,7 +81,7 @@ export default function makeResource({ endpoints }) {
         return Promise.resolve()
       })
       .then((bodyMaybe) => {
-        // if this request has a body, and ep.prepareBody was specified,
+        // If this request has a body, and ep.prepareBody was specified,
         // then use it as a transformation
 
         if (hasBody) {
@@ -96,9 +95,9 @@ export default function makeResource({ endpoints }) {
         return Promise.resolve()
       })
       .then((bodyMaybe) => {
-        // make response
+        // Make response
 
-        // parse id if it's there
+        // Parse id if it's there
         const idMaybe = (requiresId && req.params.id && parseInt(req.params.id, 10)) || null
 
         return ep.makeResponse({

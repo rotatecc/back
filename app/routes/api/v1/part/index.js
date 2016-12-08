@@ -89,7 +89,7 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        // verify existence of PType, Brand, and Part
+        // Verify existence of PType, Brand, and Part
         return Promise.all([
           PType
             .where('id', bodyMaybe.ptype_id)
@@ -124,7 +124,7 @@ export default makeResource({
         .catch(catchNotFound())
         .then((part) => {
           // TODO
-          // remove the below checks, instead just cascade deletes for each
+          // Remove the below checks, instead just cascade deletes for each
 
           if (!part.related('specs').isEmpty()) {
             return Promise.reject(makeApiError(400, 'Cannot delete, part has dependent specs'))
