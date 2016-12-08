@@ -10,6 +10,28 @@ import { Part, PType, Brand, Spec, PVariation } from 'models'
 import schema from './schema'
 
 
+const standardRelated = [
+  'ptype',
+  'brand',
+  'specs',
+  'pvariations',
+  'pvariations.specs'
+]
+
+
+const standardRelatedAll = [
+  ...standardRelated,
+  'comments',
+  'reviews',
+]
+
+
+const standardRelatedCompact = [
+  'ptype',
+  'brand'
+]
+
+
 export default makeResource({
   endpoints: [
     {
@@ -21,7 +43,7 @@ export default makeResource({
         .fetchPage({
           pageSize: config.standardPageSize,
           page: req.query.page,
-          withRelated: ['ptype', 'brand'],
+          withRelated: standardRelatedCompact,
         })
         .then(preparePaginatedResult)
       },
@@ -36,7 +58,7 @@ export default makeResource({
         .where({ id: idMaybe })
         .fetch({
           require: true,
-          withRelated: ['ptype', 'brand', 'specs', 'pvariations', 'pvariations.specs'],
+          withRelated: standardRelated,
         })
       },
     },
@@ -59,7 +81,7 @@ export default makeResource({
         .then((part) => {
           // Everything went well,
           // so just return the new part with fresh-loaded relations
-          return part.load(['specs', 'pvariations', 'pvariations.specs'])
+          return part.load(standardRelated)
         })
       },
     },
@@ -99,7 +121,7 @@ export default makeResource({
         .where('id', idMaybe)
         .fetch({
           require: true,
-          withRelated: ['specs', 'pvariations', 'comments', 'reviews']
+          withRelated: standardRelatedAll,
         })
         .catch(catchNotFound())
         .then((part) => {
