@@ -1,7 +1,7 @@
 require('../app/setup')
 var hash = require('../app/utils').hash
 
-exports.seed = function(knex, Promise) {
+exports.seed = function (knex, Promise) {
   var tableName = 'account'
 
   return knex(tableName).del()
@@ -12,14 +12,15 @@ exports.seed = function(knex, Promise) {
         { name: 'three', role: 1, status: 1 },
         { name: 'four', role: 1, status: 1 },
       ].map(function (fields) {
-        return hash(fields.name).then((passwordHashed) =>
-          knex(tableName).insert({
+        return hash(fields.name).then(function (passwordHashed) {
+          return knex(tableName).insert({
             email: fields.name + '@rotate.cc',
             display: fields.name,
             password: passwordHashed,
             role_id: fields.role,
             status_id: fields.status,
-          }))
+          })
+        })
       }))
     })
 }

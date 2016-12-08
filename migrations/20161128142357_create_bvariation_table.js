@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function (knex, Promise) {
   return knex.schema.createTable('bvariation', function (table) {
     table.increments('id').primary()
     table.string('name')
@@ -12,6 +12,6 @@ exports.up = function(knex, Promise) {
   })
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function (knex, Promise) {
   return knex.schema.dropTable('bvariation')
 }

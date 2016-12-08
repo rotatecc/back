@@ -1,5 +1,5 @@
 
-exports.seed = function(knex, Promise) {
+exports.seed = function (knex, Promise) {
   var tableName = 'bvariationtype'
 
   // Deletes ALL existing entries

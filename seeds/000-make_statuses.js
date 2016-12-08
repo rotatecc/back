@@ -1,5 +1,5 @@
 
-exports.seed = function(knex, Promise) {
+exports.seed = function (knex, Promise) {
   var tableName = 'status'
 
   // Deletes ALL existing entries
