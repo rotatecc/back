@@ -19,7 +19,7 @@ const endpoints = [
 ]
 
 endpoints.forEach((endpoint) => {
-  r.use(`/${endpoint}`, require(`./${endpoint}`).default)
+  r.use(`/${endpoint}`, require(`./${endpoint}`).default) // eslint-disable-line global-require, import/no-dynamic-require
 })
 
 export default r

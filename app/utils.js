@@ -159,7 +159,8 @@ export function reqWithPage(req) {
     .catch(() =>
       Promise.reject(makeApiError(400, 'Bad page')))
     .then((page) => {
-      req.query.page = page // replace with parsed
+      // mutate req.query.page with parsed int
+      req.query.page = page // eslint-disable-line no-param-reassign
       return Promise.resolve()
     })
 }
@@ -286,7 +287,7 @@ export function verifyAuthAndRole(req, minRole = true) {
       // all set!
 
       // mutate req by setting currentAccount
-      req.currentAccount = decoded
+      req.currentAccount = decoded // eslint-disable-line no-param-reassign
 
       // resolve
       resolve(decoded)

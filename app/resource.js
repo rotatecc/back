@@ -24,9 +24,10 @@ export const methods = {
 export default function makeResource({ endpoints }) {
   const r = Router()
 
-  for (let ep of endpoints) {
+  endpoints.forEach((ep) => {
     if (!Object.values(methods).includes(ep.method)) {
-      continue
+      // skip / continue
+      return
     }
 
     const requiresId = ([
@@ -106,7 +107,7 @@ export default function makeResource({ endpoints }) {
           bodyMaybe,
         })
       })))
-  }
+  })
 
   return r
 }

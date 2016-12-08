@@ -1,15 +1,26 @@
 {
-    "parser": "babel-eslint",
-    "env": {
-        "browser": true,
-        "es6": true
-    },
-    "extends": "airbnb-base",
-    "parserOptions": {
-        "sourceType": "module"
-    },
-    "rules": {
-        "semi": ["error", "never"],
-        "arrow-parens": ["error", "always"]
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": "airbnb-base",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "rules": {
+    "semi": ["error", "never"],
+    "arrow-parens": ["error", "always"],
+    "camelcase": 0
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "moduleDirectory": [
+          "node_modules",
+          "app"
+        ]
+      }
     }
+  }
 }
