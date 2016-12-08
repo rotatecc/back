@@ -15,6 +15,11 @@ export default makeResource({
       role: 'admin',
       makeResponse({ req }) {
         return PType
+        .query((q) => {
+          if (req.query.search) {
+            q.where('name', 'LIKE', `%${req.query.search}%`)
+          }
+        })
         .fetchPage({
           pageSize: config.standardPageSize,
           page: req.query.page,

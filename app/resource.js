@@ -75,6 +75,7 @@ export default function makeResource({ endpoints }) {
       .then(() => {
         // If this is a get request and getType is paginate or all, then attempt
         // to parse the ?search query parameter
+        // Do not allow presence of ?search with no value (empty string)
 
         if (ep.method === methods.GET && ['paginate', 'all'].includes(ep.getType)) {
           return parseSearchParam(req)

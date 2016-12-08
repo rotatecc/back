@@ -42,6 +42,11 @@ export default makeResource({
       role: 'super',
       makeResponse({ req }) {
         return Account
+        .query((q) => {
+          if (req.query.search) {
+            q.where('name', 'LIKE', `%${req.query.search}%`)
+          }
+        })
         .fetchPage({
           pageSize: config.standardPageSize,
           page: req.query.page,
