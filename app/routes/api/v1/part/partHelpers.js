@@ -128,6 +128,19 @@ export function removeOldSpecs(model, specs) {
 }
 
 
+// Helper to remove old Specs, find/create current/new Specs,
+// then attach/update to a model (probably Part or PVariation)
+export function syncSpecs(model, specs, model_key) {
+  return Promise.resolve() // Blank slate
+  .then(() =>
+    removeOldSpecs(model, specs))
+  .then(() =>
+    findOrCreateSpecs(specs))
+  .then((specCombos) =>
+    attachOrUpdateSpecs(model, specCombos, model_key))
+}
+
+
 // Destroy PVariations from Part that are not present in input PVariations
 export function removeOldPVariations(part, pvariations) {
   const inputPVariationIds = pvariations
@@ -150,15 +163,8 @@ export function removeOldPVariations(part, pvariations) {
 
 // Handle a Part's Specs, PVariations, and Specs of PVariations
 export function preparePartDependencies(part, body) {
-  // Delete old Specs, then create or find each current Spec,
-  // then attach em to this Part
-  const specsPromise = Promise.resolve() // Blank slate
-  .then(() =>
-    removeOldSpecs(part, body.specs))
-  .then(() =>
-    findOrCreateSpecs(body.specs))
-  .then((specCombos) =>
-    attachOrUpdateSpecs(part, specCombos, 'part_id'))
+  // Sync specs
+  const specsPromise = syncSpecs(part, body.specs, 'part_id')
 
   // Create or find each PVariation
   const pvariationsPromise = Promise.resolve() // Blank slate
@@ -188,13 +194,7 @@ export function preparePartDependencies(part, body) {
       })()
       // Sync Specs with this PVariation
       .then((pvariation) =>
-        Promise.resolve() // Blank slate
-        .then(() =>
-          removeOldSpecs(pvariation, specs))
-        .then(() =>
-          findOrCreateSpecs(specs))
-        .then((specCombos) =>
-          attachOrUpdateSpecs(pvariation, specCombos, 'pvariation_id'))))))
+        syncSpecs(pvariation, specs, 'pvariation_id')))))
 
   return Promise.all([
     specsPromise,
