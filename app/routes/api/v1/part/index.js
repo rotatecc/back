@@ -5,7 +5,7 @@ import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
 
-import { Part, PType, Brand } from 'models'
+import { Part } from 'models'
 
 import schema from './schema'
 import { verifyDirectPartRelationsExist, preparePartDependencies } from './partHelpers'
@@ -84,7 +84,7 @@ export default makeResource({
           preparePartDependencies(part, bodyMaybe))
         .then((part) =>
           // Everything went well,
-          // so just return the new part with fresh-loaded relations
+          // so just return the new part with some fresh-loaded relations
           part.load(standardRelated))
       },
     },
@@ -94,25 +94,28 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        // Verify existence of PType, Brand, and Part
-        return Promise.all([
-          PType
-            .where('id', bodyMaybe.ptype_id)
-            .fetch({ require: true })
-            .catch(catchNotFound('PType not found')),
-          Brand
-            .where('id', bodyMaybe.brand_id)
-            .fetch({ require: true })
-            .catch(catchNotFound('Brand not found')),
+        return verifyDirectPartRelationsExist(bodyMaybe)
+        .then(() =>
+          // Find existing part
           Part
-            .where('id', idMaybe)
-            .fetch({ require: true })
-            .catch(catchNotFound('Part not found')),
-        ])
-        .spread((ptype, brand, part) => {
+          .where('id', idMaybe)
+          .fetch({
+            require: true,
+            withRelated: standardRelated,
+          })
+          .catch(catchNotFound()))
+        .then((part) => {
+          // Update the regular ol fields on the row
           part.set(_.omit(bodyMaybe, ['specs', 'pvariations']))
           return part.save()
         })
+        .then((part) =>
+          // Update Specs, PVariations, and PVariations.Specs
+          preparePartDependencies(part, bodyMaybe))
+        .then((part) =>
+          // Everything went well,
+          // so just return the new part with some fresh-loaded relations
+          part.load(standardRelated))
       },
     },
 
