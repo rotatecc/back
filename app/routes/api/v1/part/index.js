@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import Promise from 'bluebird'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
@@ -130,44 +129,8 @@ export default makeResource({
           withRelated: standardRelatedAll,
         })
         .catch(catchNotFound())
-        .then((part) => {
-          // Destroy or detach related
-
-          const removeRelatedPromises = []
-
-          if (!part.related('specs').isEmpty()) {
-            removeRelatedPromises.push(part.specs().detach())
-          }
-
-          if (!part.related('pvariations').isEmpty()) {
-            const pvSpecDetachPromises = []
-
-            part.related('pvariations').each((pv) => {
-              if (!pv.related('specs').isEmpty()) {
-                pvSpecDetachPromises.push(pv.specs().detach())
-              }
-            })
-
-            const finalPVariationsPromise = Promise.all(pvSpecDetachPromises)
-            .then(() =>
-              Promise.all(part.related('pvariations').map((pv) =>
-                pv.destroy())))
-
-            removeRelatedPromises.push(finalPVariationsPromise)
-          }
-
-          if (!part.related('comments').isEmpty()) {
-            removeRelatedPromises.push(Promise.all(part.related('comments').map((c) => c.destroy())))
-          }
-
-          if (!part.related('reviews').isEmpty()) {
-            removeRelatedPromises.push(Promise.all(part.related('reviews').map((r) => r.destroy())))
-          }
-
-          return Promise.all(removeRelatedPromises)
-          .then(() =>
-            part.destroy({ require: true }))
-        })
+        .then((part) =>
+          part.destroy({ require: true }))
         .then(() => null)
       },
     },
