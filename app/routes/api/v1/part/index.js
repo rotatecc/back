@@ -3,7 +3,7 @@ import Promise from 'bluebird'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult, catchNotFound } from 'utils'
 
 import { Part } from 'models'
 
@@ -131,29 +131,43 @@ export default makeResource({
         })
         .catch(catchNotFound())
         .then((part) => {
-          // TODO
-          // Remove the below checks, instead just cascade deletes for each
+          // Destroy or detach related
+
+          const removeRelatedPromises = []
 
           if (!part.related('specs').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, part has dependent specs'))
+            removeRelatedPromises.push(part.specs().detach())
           }
 
           if (!part.related('pvariations').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, part has dependent pvariations'))
+            const pvSpecDetachPromises = []
+
+            part.related('pvariations').each((pv) => {
+              if (!pv.related('specs').isEmpty()) {
+                pvSpecDetachPromises.push(pv.specs().detach())
+              }
+            })
+
+            const finalPVariationsPromise = Promise.all(pvSpecDetachPromises)
+            .then(() =>
+              Promise.all(part.related('pvariations').map((pv) =>
+                pv.destroy())))
+
+            removeRelatedPromises.push(finalPVariationsPromise)
           }
 
           if (!part.related('comments').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, part has dependent comments'))
+            removeRelatedPromises.push(Promise.all(part.related('comments').map((c) => c.destroy())))
           }
 
           if (!part.related('reviews').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, part has dependent reviews'))
+            removeRelatedPromises.push(Promise.all(part.related('reviews').map((r) => r.destroy())))
           }
 
-          return part
+          return Promise.all(removeRelatedPromises)
+          .then(() =>
+            part.destroy({ require: true }))
         })
-        .then((part) =>
-          part.destroy({ require: true }))
         .then(() => null)
       },
     },
