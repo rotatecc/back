@@ -25,31 +25,20 @@ export default bs.model('Part', bs.Model.extend({
 
       // Destroy PVariations
       if (!part.related('pvariations').isEmpty()) {
-        const pvSpecDetachPromises = []
-
-        // Detach Specs of PVariations first
-        part.related('pvariations').each((pv) => {
-          if (!pv.related('specs').isEmpty()) {
-            pvSpecDetachPromises.push(pv.specs().detach())
-          }
-        })
-
-        const finalPVariationsPromise = Promise.all(pvSpecDetachPromises)
-        .then(() =>
-          Promise.all(part.related('pvariations').map((pv) =>
-            pv.destroy())))
-
-        removeRelatedPromises.push(finalPVariationsPromise)
+        const pvDestroyPromises = part.related('pvariations').map((pv) => pv.destroy())
+        removeRelatedPromises.push(Promise.all(pvDestroyPromises))
       }
 
       // Destroy Comments
       if (!part.related('comments').isEmpty()) {
-        removeRelatedPromises.push(Promise.all(part.related('comments').map((c) => c.destroy())))
+        const commentDestroyPromises = part.related('comments').map((c) => c.destroy())
+        removeRelatedPromises.push(Promise.all(commentDestroyPromises))
       }
 
       // Destroy Reviews
       if (!part.related('reviews').isEmpty()) {
-        removeRelatedPromises.push(Promise.all(part.related('reviews').map((r) => r.destroy())))
+        const reviewDestroyPromises = part.related('reviews').map((c) => c.destroy())
+        removeRelatedPromises.push(Promise.all(reviewDestroyPromises))
       }
 
       // Wait for all relations to be removed before destroying actual Part

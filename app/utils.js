@@ -13,7 +13,7 @@ import { Account } from 'models'
 
 
 export function makeApiError(code, message) {
-  const error = new Error(message)
+  const error = new Error(message || '')
 
   error.name = 'ApiError'
   error.code = code

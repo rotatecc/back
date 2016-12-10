@@ -151,13 +151,8 @@ export function removeOldPVariations(part, pvariations) {
   .filter((pv) =>
     !inputPVariationIds.includes(pv.get('id')))
 
-  return Promise.resolve() // Blank slate
-  .then(() =>
-    // Remove each PVariation's Spec pivot values
-    Promise.all(toRemove.map((pvariation) => removeAllSpecs(pvariation))))
-  .then(() =>
-    // Destroy each PVariation
-    Promise.all(toRemove.map((pvariation) => pvariation.destroy())))
+  // Destroy each PVariation
+  return Promise.all(toRemove.map((pvariation) => pvariation.destroy()))
 }
 
 
