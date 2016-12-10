@@ -33,11 +33,11 @@ export default {
   account_id: idSchema,
 
   // Complex relations
-  btags: Joi.array().items(idSchema).required(),
+  btags: Joi.array().items(idSchema.optional()).required(),
   bvariations: Joi.array().items(Joi.object().keys({
     id: idSchema.optional(),
     name: Joi.string().min(2).required(),
     bvariationtype_id: idSchema,
-    pvariations: Joi.array().items(idSchema).required(),
-  })).required(),
+    pvariations: Joi.array().items(idSchema.optional()).required(),
+  }).optional()).required(),
 }

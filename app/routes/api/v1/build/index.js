@@ -70,10 +70,11 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        // Forge new Build
-        return Build
-        .forge(bodyMaybe)
-        .save()
+        return Promise.resolve('cooooooooooool')
+        // // Forge new Build
+        // return Build
+        // .forge(bodyMaybe)
+        // .save()
       },
     },
 
