@@ -26,24 +26,24 @@ export function verifyDirectPartRelationsExist(body) {
 export function findOrCreateSpecs(specs) {
   // Wrap it all in a Promise. If a single one of the Specs isn't found,
   // or something else bad happens, everything will fail
-  return Promise.all(specs.map(({ spec_id, spec_name, value }) => {
-    if (spec_id) {
+  return Promise.all(specs.map(({ id, name, value }) => {
+    if (id) {
       // Try to find Spec by id
       return Spec
-      .where('id', spec_id)
+      .where('id', id)
       .fetch({ require: true })
-      .catch(catchNotFound(`Spec with id ${spec_id} not found`))
+      .catch(catchNotFound(`Spec with id ${id} not found`))
       .then((spec) =>
         ({ spec, value }))
-    } else if (spec_name) {
+    } else if (name) {
       // Try to find Spec by name (probably no match most of the time)
       return Spec
-      .where('name', spec_name)
+      .where('name', name)
       .fetch({ require: true })
       .catch(() =>
         // Spec doesn't exist (as expected), so create it
         Spec
-        .forge({ name: spec_name })
+        .forge({ name })
         .save())
       .then((spec) =>
         ({ spec, value }))
@@ -51,7 +51,7 @@ export function findOrCreateSpecs(specs) {
 
     // Branch not really reachable due to Joi schema xor validation,
     // but just in case...
-    return Promise.reject(makeApiError(400, 'Spec was missing exactly one of [spec_id, spec_name]'))
+    return Promise.reject(makeApiError(400, 'Spec was missing exactly one of [id, name]'))
   }))
 }
 
@@ -113,11 +113,11 @@ export function removeOldSpecs(model, specs) {
   }
 
   const inputSpecIds = specs
-  .map((spec) => spec.spec_id)
+  .map((spec) => spec.id)
   .filter((id) => id)
 
   const inputSpecNames = specs
-  .map((spec) => spec.spec_name)
+  .map((spec) => spec.name)
   .filter((name) => name)
 
   const toRemove = model.related('specs')
@@ -144,7 +144,7 @@ export function syncSpecs(model, specs, model_key) {
 // Destroy PVariations from Part that are not present in input PVariations
 export function removeOldPVariations(part, pvariations) {
   const inputPVariationIds = pvariations
-  .map((pv) => pv.pvariation_id)
+  .map((pv) => pv.id)
   .filter((id) => id)
 
   const toRemove = part.related('pvariations')
@@ -168,18 +168,18 @@ export function preparePartDependencies(part, body) {
     removeOldPVariations(part, body.pvariations))
   .then(() =>
     // Create or find each, syncing Specs as well
-    Promise.all(body.pvariations.map(({ pvariation_id, specs }) =>
+    Promise.all(body.pvariations.map(({ id, specs }) =>
       // Set up an IIFE due to long if statement body
       (() => {
-        if (pvariation_id) {
+        if (id) {
           // Try to find PVariation by id
           return PVariation
-          .where('id', pvariation_id)
+          .where('id', id)
           .fetch({
             require: true,
             withRelated: ['specs'],
           })
-          .catch(catchNotFound(`PVariation with id ${pvariation_id} not found`))
+          .catch(catchNotFound(`PVariation with id ${id} not found`))
         }
 
         // Otherwise, create new PVariation

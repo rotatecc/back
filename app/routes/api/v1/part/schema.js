@@ -6,10 +6,10 @@ const idSchema = Joi.number().positive().integer().required()
 const stringAllowEmptySchema = Joi.string().allow('')
 
 const specsSchema = Joi.array().items(Joi.object().keys({
-  spec_id: idSchema.optional(),
-  spec_name: Joi.string(),
+  id: idSchema.optional(),
+  name: Joi.string(),
   value: Joi.string().required(),
-}).xor('spec_id', 'spec_name')) // Must contain exactly one of spec_id, spec_name
+}).xor('id', 'name')) // Must contain exactly one of id, name
 
 export default {
   name: Joi.string().min(2).required(),
@@ -26,7 +26,7 @@ export default {
   specs: specsSchema.required(),
 
   pvariations: Joi.array().items(Joi.object({
-    pvariation_id: idSchema.optional(), // No id means new, otherwise, it's an update
+    id: idSchema.optional(), // No id means new, otherwise, it's an update
     specs: specsSchema.required(),
   })).required(),
 }

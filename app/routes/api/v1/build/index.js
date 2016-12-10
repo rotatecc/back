@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { preparePaginatedResult, catchNotFound } from 'utils'
@@ -70,11 +72,10 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return Promise.resolve('cooooooooooool')
-        // // Forge new Build
-        // return Build
-        // .forge(bodyMaybe)
-        // .save()
+        // Forge new Build
+        return Build
+        .forge(_.omit(bodyMaybe, ['btags', 'bvariations']))
+        .save()
       },
     },
 
