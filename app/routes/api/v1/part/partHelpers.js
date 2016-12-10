@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import Promise from 'bluebird'
 
 import { Brand, PType, PVariation, Spec } from 'models'
 import { catchNotFound, makeApiError } from 'utils'
@@ -158,7 +159,7 @@ export function removeOldPVariations(part, pvariations) {
 
 // Handle a Part's Specs, PVariations, and Specs of PVariations
 export function preparePartDependencies(part, body) {
-  // Sync specs
+  // Sync Specs
   const specsPromise = syncSpecs(part, body.specs, 'part_id')
 
   // Create or find each PVariation

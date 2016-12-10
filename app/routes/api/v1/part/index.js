@@ -83,7 +83,7 @@ export default makeResource({
           preparePartDependencies(part, bodyMaybe))
         .then((part) =>
           // Everything went well,
-          // so just return the new part with some fresh-loaded relations
+          // so just return the new Part with some fresh-loaded relations
           part.load(standardRelated))
       },
     },
@@ -113,7 +113,7 @@ export default makeResource({
           preparePartDependencies(part, bodyMaybe))
         .then((part) =>
           // Everything went well,
-          // so just return the new part with some fresh-loaded relations
+          // so just return the Part with some fresh-loaded relations
           part.load(standardRelated))
       },
     },

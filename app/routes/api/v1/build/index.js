@@ -7,6 +7,7 @@ import { preparePaginatedResult, catchNotFound } from 'utils'
 import { Build } from 'models'
 
 import schema from './schema'
+import { prepareBuildDependencies } from './buildHelpers'
 
 
 const standardRelated = [
@@ -76,6 +77,12 @@ export default makeResource({
         return Build
         .forge(_.omit(bodyMaybe, ['btags', 'bvariations']))
         .save()
+        .then((build) =>
+          prepareBuildDependencies(build, bodyMaybe))
+        .then((build) =>
+          // Everything went well,
+          // so just return the new Build with some fresh-loaded relations
+          build.load(standardRelated))
       },
     },
 
@@ -92,9 +99,15 @@ export default makeResource({
         })
         .catch(catchNotFound())
         .then((build) => {
-          build.set(bodyMaybe)
+          build.set(_.omit(bodyMaybe, ['btags', 'bvariations']))
           return build.save()
         })
+        .then((build) =>
+          prepareBuildDependencies(build, bodyMaybe))
+        .then((build) =>
+          // Everything went well,
+          // so just return the Build with some fresh-loaded relations
+          build.load(standardRelated))
       },
     },
 

@@ -6,6 +6,10 @@ exports.up = function (knex, Promise) {
     table.integer('order').unsigned()
     table.timestamps()
 
+    // belongsTo BVariationType
+    table.integer('bvariationtype_id').unsigned()
+    table.foreign('bvariationtype_id').references('id').inTable('bvariationtype')
+
     // belongsTo Build
     table.integer('build_id').unsigned()
     table.foreign('build_id').references('id').inTable('build')
