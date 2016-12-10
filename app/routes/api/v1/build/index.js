@@ -7,16 +7,25 @@ import { Build } from 'models'
 import schema from './schema'
 
 
-const standardRelated = [ // eslint-disable-line no-unused-vars
+const standardRelated = [
+  'btags',
+  'bvariations',
+  'bvariations.bvariationtype',
+  'bvariations.pvariations',
+  'bvariations.pvariations.part',
+  'bvariations.pvariations.specs',
 ]
 
 
-const standardRelatedAll = [ // eslint-disable-line no-unused-vars
+const standardRelatedAll = [
   ...standardRelated,
+  'comments',
+  'bvariations.photos',
+  // More?
 ]
 
 
-const standardRelatedCompact = [ // eslint-disable-line no-unused-vars
+const standardRelatedCompact = [
 ]
 
 

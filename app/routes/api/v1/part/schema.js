@@ -23,10 +23,10 @@ export default {
   brand_id: idSchema,
 
   // Complex relations
-  specs: specsSchema,
+  specs: specsSchema.required(),
 
   pvariations: Joi.array().items(Joi.object({
     pvariation_id: idSchema.optional(), // No id means new, otherwise, it's an update
-    specs: specsSchema,
-  })),
+    specs: specsSchema.required(),
+  })).required(),
 }
