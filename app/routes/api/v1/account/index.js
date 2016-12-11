@@ -1,37 +1,15 @@
-import Promise from 'bluebird'
-
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult } from 'utils'
 
-import { Account, Status } from 'models'
+import { Account } from 'models'
+
+import { setAccountStatus } from './accountHelpers'
 
 
 // NOTE
 // Endpoints under /account are only for super-admins.
 // For a user's own endpoints, see /auth
-
-
-export function setAccountStatus(userId, isBanned) {
-  return Promise.all([
-    Status.where('slug', isBanned ? 'banned' : 'okay').fetch({ require: true }),
-    Account
-    .where({ id: userId })
-    .fetch({
-      withRelated: ['role', 'status'],
-      require: true,
-    }),
-  ])
-  .catch(catchNotFound())
-  .spread((status, account) => {
-    if (account.related('role').get('slug') === 'super') {
-      return Promise.reject(makeApiError(400, 'Cannot set status of super-admin'))
-    }
-
-    account.set('status_id', status.get('id'))
-    return account.save().then(() => null)
-  })
-}
 
 
 export default makeResource({
