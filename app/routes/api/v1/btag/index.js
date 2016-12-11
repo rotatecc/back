@@ -1,6 +1,7 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { transact } from 'db'
 
 import { BTag } from 'models'
 
@@ -48,21 +49,22 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return BTag
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b) {
-            return Promise.reject(makeApiError(400, 'BTag with name already exists'))
-          }
-
-          return null
-        })
-        .then(() =>
-          // Forge new BTag
+        return transact((tmix) =>
           BTag
-          .forge(bodyMaybe)
-          .save())
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b) {
+              return Promise.reject(makeApiError(400, 'BTag with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            // Forge new BTag
+            BTag
+            .forge(bodyMaybe)
+            .save(null, tmix)))
       },
     },
 
@@ -71,28 +73,28 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return BTag
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b && b.get('id') !== idMaybe) {
-            return Promise.reject(makeApiError(400, 'BTag with name already exists'))
-          }
-
-          return null
-        })
-        .then(() =>
+        return transact((tmix) =>
           BTag
-          .where('id', idMaybe)
-          .fetch({
-            require: true,
-            withRelated: [],
-          }))
-        .catch(catchNotFound())
-        .then((btag) => {
-          btag.set(bodyMaybe)
-          return btag.save()
-        })
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b && b.get('id') !== idMaybe) {
+              return Promise.reject(makeApiError(400, 'BTag with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            BTag
+            .where('id', idMaybe)
+            .fetch({
+              ...tmix,
+              require: true,
+              withRelated: [],
+            }))
+          .catch(catchNotFound())
+          .then((btag) =>
+            btag.save(bodyMaybe, tmix)))
       },
     },
 
@@ -100,23 +102,25 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return BTag
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: ['builds'],
-        })
-        .catch(catchNotFound())
-        .then((btag) => {
-          if (!btag.related('builds').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, btag has dependent builds'))
-          }
+        return transact((tmix) =>
+          BTag
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: ['builds'],
+          })
+          .catch(catchNotFound())
+          .then((btag) => {
+            if (!btag.related('builds').isEmpty()) {
+              return Promise.reject(makeApiError(400, 'Cannot delete, btag has dependent builds'))
+            }
 
-          return btag
-        })
-        .then((btag) =>
-          btag.destroy({ require: true }))
-        .then(() => null)
+            return btag
+          })
+          .then((btag) =>
+            btag.destroy({ ...tmix, require: true }))
+          .then(() => null))
       },
     },
   ],

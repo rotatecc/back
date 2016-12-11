@@ -1,6 +1,7 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { transact } from 'db'
 
 import { Brand } from 'models'
 
@@ -48,21 +49,22 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return Brand
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b) {
-            return Promise.reject(makeApiError(400, 'Brand with name already exists'))
-          }
-
-          return null
-        })
-        .then(() =>
-          // Forge new Brand
+        return transact((tmix) =>
           Brand
-          .forge(bodyMaybe)
-          .save())
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b) {
+              return Promise.reject(makeApiError(400, 'Brand with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            // Forge new Brand
+            Brand
+            .forge(bodyMaybe)
+            .save(null, tmix)))
       },
     },
 
@@ -71,28 +73,28 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return Brand
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b && b.get('id') !== idMaybe) {
-            return Promise.reject(makeApiError(400, 'Brand with name already exists'))
-          }
-
-          return null
-        })
-        .then(() =>
+        return transact((tmix) =>
           Brand
-          .where('id', idMaybe)
-          .fetch({
-            require: true,
-            withRelated: [],
-          }))
-        .catch(catchNotFound())
-        .then((brand) => {
-          brand.set(bodyMaybe)
-          return brand.save()
-        })
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b && b.get('id') !== idMaybe) {
+              return Promise.reject(makeApiError(400, 'Brand with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            Brand
+            .where('id', idMaybe)
+            .fetch({
+              ...tmix,
+              require: true,
+              withRelated: [],
+            }))
+          .catch(catchNotFound())
+          .then((brand) =>
+            brand.save(bodyMaybe, tmix)))
       },
     },
 
@@ -100,23 +102,25 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return Brand
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: ['parts'],
-        })
-        .catch(catchNotFound())
-        .then((brand) => {
-          if (!brand.related('parts').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, brand has dependent parts'))
-          }
+        return transact((tmix) =>
+          Brand
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: ['parts'],
+          })
+          .catch(catchNotFound())
+          .then((brand) => {
+            if (!brand.related('parts').isEmpty()) {
+              return Promise.reject(makeApiError(400, 'Cannot delete, brand has dependent parts'))
+            }
 
-          return brand
-        })
-        .then((brand) =>
-          brand.destroy({ require: true }))
-        .then(() => null)
+            return brand
+          })
+          .then((brand) =>
+            brand.destroy({ ...tmix, require: true }))
+          .then(() => null))
       },
     },
   ],
