@@ -131,6 +131,8 @@ export function removeOldSpecs(model, specs) {
 
 // Helper to remove old Specs, find/create current/new Specs,
 // then attach/update to a model (probably Part or PVariation)
+// model_key is the foreign key on the pivot table
+// (probably 'part_id' or 'pvariation_id')
 export function syncSpecs(model, specs, model_key) {
   return Promise.resolve() // Blank slate
   .then(() =>
