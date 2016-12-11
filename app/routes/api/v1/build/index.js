@@ -3,6 +3,7 @@ import _ from 'lodash'
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { preparePaginatedResult, catchNotFound } from 'utils'
+import { transact } from 'db'
 
 import { Build } from 'models'
 
@@ -73,16 +74,17 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        // Forge new Build
-        return Build
-        .forge(_.omit(bodyMaybe, ['btags', 'bvariations']))
-        .save()
-        .then((build) =>
-          prepareBuildDependencies(build, bodyMaybe))
-        .then((build) =>
-          // Everything went well,
-          // so just return the new Build with some fresh-loaded relations
-          build.load(standardRelated))
+        return transact((tmix) =>
+          // Forge new Build
+          Build
+          .forge(_.omit(bodyMaybe, ['btags', 'bvariations']))
+          .save(null, tmix)
+          .then((build) =>
+            prepareBuildDependencies(build, bodyMaybe, tmix))
+          .then((build) =>
+            // Everything went well,
+            // so just return the new Build with some fresh-loaded relations
+            build.load(standardRelated, tmix)))
       },
     },
 
@@ -91,23 +93,23 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return Build
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: standardRelated,
-        })
-        .catch(catchNotFound())
-        .then((build) => {
-          build.set(_.omit(bodyMaybe, ['btags', 'bvariations']))
-          return build.save()
-        })
-        .then((build) =>
-          prepareBuildDependencies(build, bodyMaybe))
-        .then((build) =>
-          // Everything went well,
-          // so just return the Build with some fresh-loaded relations
-          build.load(standardRelated))
+        return transact((tmix) =>
+          Build
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: standardRelated,
+          })
+          .catch(catchNotFound())
+          .then((build) =>
+            build.save(_.omit(bodyMaybe, ['btags', 'bvariations']), tmix))
+          .then((build) =>
+            prepareBuildDependencies(build, bodyMaybe, tmix))
+          .then((build) =>
+            // Everything went well,
+            // so just return the Build with some fresh-loaded relations
+            build.load(standardRelated, tmix)))
       },
     },
 
@@ -115,16 +117,18 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return Build
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: standardRelatedAll,
-        })
-        .catch(catchNotFound())
-        .then((build) =>
-          build.destroy({ require: true }))
-        .then(() => null)
+        return transact((tmix) =>
+          Build
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: standardRelatedAll,
+          })
+          .catch(catchNotFound())
+          .then((build) =>
+            build.destroy({ ...tmix, require: true }))
+          .then(() => null))
       },
     },
   ],
