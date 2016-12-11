@@ -12,7 +12,8 @@
     "semi": ["error", "never"],
     "arrow-parens": ["error", "always"],
     "camelcase": 0,
-    "func-names": 0
+    "func-names": 0,
+    "import/prefer-default-export": 0
   },
   "settings": {
     "import/resolver": {

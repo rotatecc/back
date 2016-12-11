@@ -1,7 +1,7 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
-import { bs } from 'db'
+import { transact } from 'db'
 
 import { PType } from 'models'
 
@@ -49,10 +49,8 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return bs.transaction((t) => {
-          const tmix = { transacting: t }
-
-          return PType
+        return transact((tmix) =>
+          PType
           .where({ name: bodyMaybe.name })
           .fetch(tmix)
           .then((b) => {
@@ -66,8 +64,7 @@ export default makeResource({
             // Forge new PType
             PType
             .forge(bodyMaybe)
-            .save(null, tmix))
-        })
+            .save(null, tmix)))
       },
     },
 
@@ -76,10 +73,8 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return bs.transaction((t) => {
-          const tmix = { transacting: t }
-
-          return PType
+        return transact((tmix) =>
+          PType
           .where({ name: bodyMaybe.name })
           .fetch(tmix)
           .then((b) => {
@@ -99,8 +94,7 @@ export default makeResource({
             }))
           .catch(catchNotFound())
           .then((ptype) =>
-            ptype.save(bodyMaybe, tmix))
-        })
+            ptype.save(bodyMaybe, tmix)))
       },
     },
 
@@ -108,10 +102,8 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return bs.transaction((t) => {
-          const tmix = { transacting: t }
-
-          return PType
+        return transact((tmix) =>
+          PType
           .where('id', idMaybe)
           .fetch({
             ...tmix,
@@ -131,8 +123,7 @@ export default makeResource({
               ...tmix,
               require: true,
             }))
-          .then(() => null)
-        })
+          .then(() => null))
       },
     },
   ],

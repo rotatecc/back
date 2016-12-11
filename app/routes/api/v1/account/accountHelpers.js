@@ -4,14 +4,20 @@ import { Account, Status } from 'models'
 import { catchNotFound, makeApiError } from 'utils'
 
 
-export function setAccountStatus(userId, isBanned) {
+export function setAccountStatus(userId, isBanned, tmix) {
   return Promise.all([
-    Status.where('slug', isBanned ? 'banned' : 'okay').fetch({ require: true }),
+    Status
+    .where('slug', isBanned ? 'banned' : 'okay')
+    .fetch({
+      ...tmix,
+      require: true,
+    }),
     Account
     .where({ id: userId })
     .fetch({
-      withRelated: ['role', 'status'],
+      ...tmix,
       require: true,
+      withRelated: ['role', 'status'],
     }),
   ])
   .catch(catchNotFound())
@@ -20,7 +26,9 @@ export function setAccountStatus(userId, isBanned) {
       return Promise.reject(makeApiError(400, 'Cannot set status of super-admin'))
     }
 
-    account.set('status_id', status.get('id'))
-    return account.save().then(() => null)
+    return account.save({
+      status_id: status.get('id'),
+    }, tmix)
   })
+  .then(() => null)
 }

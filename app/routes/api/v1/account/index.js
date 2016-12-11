@@ -1,6 +1,7 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { preparePaginatedResult } from 'utils'
+import { transact } from 'db'
 
 import { Account } from 'models'
 
@@ -53,8 +54,8 @@ export default makeResource({
       method: methods.PUT,
       role: 'super',
       makeResponse({ idMaybe }) {
-        // See below
-        return setAccountStatus(idMaybe, true)
+        return transact((tmix) =>
+          setAccountStatus(idMaybe, true, tmix))
       },
     },
 
@@ -63,8 +64,8 @@ export default makeResource({
       method: methods.PUT,
       role: 'super',
       makeResponse({ idMaybe }) {
-        // See below
-        return setAccountStatus(idMaybe, false)
+        return transact((tmix) =>
+          setAccountStatus(idMaybe, false, tmix))
       },
     },
   ],
