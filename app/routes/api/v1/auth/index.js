@@ -3,6 +3,7 @@ import Promise from 'bluebird'
 
 import makeResource, { methods } from 'resource'
 import { authenticate, makeApiError, hash, catchNotFound, makeOwnershipVerifier } from 'utils'
+import { transact } from 'db'
 
 import { Account, Role, Status } from 'models'
 
@@ -17,46 +18,47 @@ export default makeResource({
       role: false,
       schema: _.pick(schema, ['email', 'display', 'password']),
       makeResponse({ bodyMaybe }) {
-        return Account
-        .where('email', bodyMaybe.email)
-        .fetch()
-        .then((r) => {
-          // Verify uniqueness
-
-          if (r) {
-            return Promise.reject(makeApiError(400, 'Account with email already exists'))
-          }
-
-          return null
-        })
-        .then(() =>
-          // Get default role and status first
-          Promise.all([
-            Role.where('slug', 'user').fetch({ require: true }),
-            Status.where('slug', 'okay').fetch({ require: true }),
-          ]))
-        .spread((role, status) =>
-          // Hash password
-          hash(bodyMaybe.password)
-          .catch((err) =>
-            Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`)))
-          .then((password) => [role, status, password]),
-        )
-        .spread((role, status, password) =>
-          // Forge new account
-
+        return transact((tmix) =>
           Account
-          .forge({
-            ...bodyMaybe,
-            password,
-            role_id: role.get('id'),
-            status_id: status.get('id'),
-          })
-          .save()
-          .then((account) =>
-            // TODO enqueue new account registration email
+          .where('email', bodyMaybe.email)
+          .fetch(tmix)
+          .then((r) => {
+            // Verify uniqueness
 
-            account))
+            if (r) {
+              return Promise.reject(makeApiError(400, 'Account with email already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            // Get default role and status first
+            Promise.all([
+              Role.where('slug', 'user').fetch({ ...tmix, require: true }),
+              Status.where('slug', 'okay').fetch({ ...tmix, require: true }),
+            ]))
+          .spread((role, status) =>
+            // Hash password
+            hash(bodyMaybe.password)
+            .catch((err) =>
+              Promise.reject(makeApiError(500, `Password hashing failed: ${err.message}`)))
+            .then((password) => [role, status, password]),
+          )
+          .spread((role, status, password) =>
+            // Forge new account
+
+            Account
+            .forge({
+              ...bodyMaybe,
+              password,
+              role_id: role.get('id'),
+              status_id: status.get('id'),
+            })
+            .save(null, tmix)
+            .then((account) =>
+              // TODO enqueue new account registration email
+
+              account)))
       },
     },
 
@@ -76,15 +78,14 @@ export default makeResource({
       role: 'user',
       schema: _.pick(schema, ['email', 'display']),
       makeResponse({ req, idMaybe, bodyMaybe }) {
-        return Account
-        .where('id', idMaybe)
-        .fetch({ require: true })
-        .catch(catchNotFound())
-        .then(makeOwnershipVerifier(req, (r) => r.get('id')))
-        .then((account) => {
-          account.set(bodyMaybe)
-          return account.save()
-        })
+        return transact((tmix) =>
+          Account
+          .where('id', idMaybe)
+          .fetch({ ...tmix, require: true })
+          .catch(catchNotFound())
+          .then(makeOwnershipVerifier(req, (r) => r.get('id')))
+          .then((account) =>
+            account.save(bodyMaybe, tmix)))
       },
     },
 
@@ -101,19 +102,19 @@ export default makeResource({
         .then((passwordHashed) => ({ password: passwordHashed }))
       },
       makeResponse({ req, idMaybe, bodyMaybe }) {
-        return Account
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: ['role', 'status'],
-        })
-        .catch(catchNotFound())
-        .then(makeOwnershipVerifier(req, (r) => r.get('id')))
-        .then((account) => {
-          // Set new hashed password (see prepareBody above)
-          account.set(bodyMaybe)
-          return account.save()
-        })
+        return transact((tmix) =>
+          Account
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: ['role', 'status'],
+          })
+          .catch(catchNotFound())
+          .then(makeOwnershipVerifier(req, (r) => r.get('id')))
+          .then((account) =>
+            // Set new hashed password (see prepareBody above)
+            account.save(bodyMaybe, tmix)))
       },
     },
   ],
