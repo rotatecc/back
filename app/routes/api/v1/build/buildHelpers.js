@@ -30,7 +30,7 @@ export function syncBTags(build, btagIds, tmix) {
   .filter((id) => !currentBTagIds.includes(id))
 
   // Make sure all the BTags to be attached exist
-  Promise.all(toAttach.map((id) =>
+  return Promise.all(toAttach.map((id) =>
     BTag.where('id', id)
     .fetch({ ...tmix, require: true })
     .catch(catchNotFound(`BTag with id ${id} not found`))))
@@ -54,7 +54,7 @@ export function syncPVariations(bvariation, pvariationIds, tmix) {
   .filter((id) => !currentPVIds.includes(id))
 
   // Make sure all the PVariations to be attached exist
-  Promise.all(toAttach.map((id) =>
+  return Promise.all(toAttach.map((id) =>
     PVariation.where('id', id)
     .fetch({ ...tmix, require: true })
     .catch(catchNotFound(`PVariation with id ${id} not found`))))
@@ -103,15 +103,18 @@ export function prepareBuildDependencies(build, body, tmix) {
             withRelated: ['pvariations'], // We'll load the BVariationType later
           })
           .catch(catchNotFound(`BVariation with id ${id} not found`))
-          .then((bvariation) =>
-            bvariation.save(fields, tmix).load('bvariationtype', tmix))
+          .then((bv) =>
+            bv.save(fields, tmix))
+          .then((bv) =>
+            bv.load('bvariationtype', tmix))
         }
 
         // Otherwise, create new BVariation
         return BVariation
         .forge(fields)
         .save(null, tmix)
-        .load('bvariationtype', tmix)
+        .then((bv) =>
+          bv.load('bvariationtype', tmix))
       })
       // Sync PVariations with this BVariation
       .then((bvariation) =>
