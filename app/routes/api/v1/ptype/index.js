@@ -1,6 +1,7 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { bs } from 'db'
 
 import { PType } from 'models'
 
@@ -48,21 +49,25 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return PType
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b) {
-            return Promise.reject(makeApiError(400, 'PType with name already exists'))
-          }
+        return bs.transaction((t) => {
+          const tmix = { transacting: t }
 
-          return null
+          return PType
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b) {
+              return Promise.reject(makeApiError(400, 'PType with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            // Forge new PType
+            PType
+            .forge(bodyMaybe)
+            .save(null, tmix))
         })
-        .then(() =>
-          // Forge new PType
-          PType
-          .forge(bodyMaybe)
-          .save())
       },
     },
 
@@ -71,27 +76,30 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return PType
-        .where({ name: bodyMaybe.name })
-        .fetch()
-        .then((b) => {
-          if (b && b.get('id') !== idMaybe) {
-            return Promise.reject(makeApiError(400, 'PType with name already exists'))
-          }
+        return bs.transaction((t) => {
+          const tmix = { transacting: t }
 
-          return null
-        })
-        .then(() =>
-          PType
-          .where('id', idMaybe)
-          .fetch({
-            require: true,
-            withRelated: [],
-          }))
-        .catch(catchNotFound())
-        .then((ptype) => {
-          ptype.set(bodyMaybe)
-          return ptype.save()
+          return PType
+          .where({ name: bodyMaybe.name })
+          .fetch(tmix)
+          .then((b) => {
+            if (b && b.get('id') !== idMaybe) {
+              return Promise.reject(makeApiError(400, 'PType with name already exists'))
+            }
+
+            return null
+          })
+          .then(() =>
+            PType
+            .where('id', idMaybe)
+            .fetch({
+              ...tmix,
+              require: true,
+              withRelated: [],
+            }))
+          .catch(catchNotFound())
+          .then((ptype) =>
+            ptype.save(bodyMaybe, tmix))
         })
       },
     },
@@ -100,23 +108,31 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return PType
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: ['parts'],
-        })
-        .catch(catchNotFound())
-        .then((ptype) => {
-          if (!ptype.related('parts').isEmpty()) {
-            return Promise.reject(makeApiError(400, 'Cannot delete, ptype has dependent parts'))
-          }
+        return bs.transaction((t) => {
+          const tmix = { transacting: t }
 
-          return ptype
+          return PType
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: ['parts'],
+          })
+          .catch(catchNotFound())
+          .then((ptype) => {
+            if (!ptype.related('parts').isEmpty()) {
+              return Promise.reject(makeApiError(400, 'Cannot delete, PType has dependent Parts'))
+            }
+
+            return ptype
+          })
+          .then((ptype) =>
+            ptype.destroy({
+              ...tmix,
+              require: true,
+            }))
+          .then(() => null)
         })
-        .then((ptype) =>
-          ptype.destroy({ require: true }))
-        .then(() => null)
       },
     },
   ],
