@@ -3,6 +3,7 @@ import _ from 'lodash'
 import config from 'config'
 import makeResource, { methods } from 'resource'
 import { preparePaginatedResult, catchNotFound } from 'utils'
+import { transact } from 'db'
 
 import { Part } from 'models'
 
@@ -73,18 +74,19 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ bodyMaybe }) {
-        return verifyDirectPartRelationsExist(bodyMaybe)
-        .then(() =>
-          // Forge new part
-          Part
-          .forge(_.omit(bodyMaybe, ['specs', 'pvariations']))
-          .save())
-        .then((part) =>
-          preparePartDependencies(part, bodyMaybe))
-        .then((part) =>
-          // Everything went well,
-          // so just return the new Part with some fresh-loaded relations
-          part.load(standardRelated))
+        return transact((tmix) =>
+          verifyDirectPartRelationsExist(bodyMaybe, tmix)
+          .then(() =>
+            // Forge new part
+            Part
+            .forge(_.omit(bodyMaybe, ['specs', 'pvariations']))
+            .save(null, tmix))
+          .then((part) =>
+            preparePartDependencies(part, bodyMaybe, tmix))
+          .then((part) =>
+            // Everything went well,
+            // so just return the new Part with some fresh-loaded relations
+            part.load(standardRelated, tmix)))
       },
     },
 
@@ -93,28 +95,28 @@ export default makeResource({
       role: 'admin',
       schema,
       makeResponse({ idMaybe, bodyMaybe }) {
-        return verifyDirectPartRelationsExist(bodyMaybe)
-        .then(() =>
-          // Find existing part
-          Part
-          .where('id', idMaybe)
-          .fetch({
-            require: true,
-            withRelated: standardRelated,
-          })
-          .catch(catchNotFound()))
-        .then((part) => {
-          // Update the regular ol fields on the row
-          part.set(_.omit(bodyMaybe, ['specs', 'pvariations']))
-          return part.save()
-        })
-        .then((part) =>
-          // Update Specs, PVariations, and PVariations.Specs
-          preparePartDependencies(part, bodyMaybe))
-        .then((part) =>
-          // Everything went well,
-          // so just return the Part with some fresh-loaded relations
-          part.load(standardRelated))
+        return transact((tmix) =>
+          verifyDirectPartRelationsExist(bodyMaybe, tmix)
+          .then(() =>
+            // Find existing part
+            Part
+            .where('id', idMaybe)
+            .fetch({
+              ...tmix,
+              require: true,
+              withRelated: standardRelated,
+            })
+            .catch(catchNotFound()))
+          .then((part) =>
+            // Update the regular ol fields on the row
+            part.save(_.omit(bodyMaybe, ['specs', 'pvariations']), tmix))
+          .then((part) =>
+            // Update Specs, PVariations, and PVariations.Specs
+            preparePartDependencies(part, bodyMaybe, tmix))
+          .then((part) =>
+            // Everything went well,
+            // so just return the Part with some fresh-loaded relations
+            part.load(standardRelated, tmix)))
       },
     },
 
@@ -122,16 +124,18 @@ export default makeResource({
       method: methods.DELETE,
       role: 'admin',
       makeResponse({ idMaybe }) {
-        return Part
-        .where('id', idMaybe)
-        .fetch({
-          require: true,
-          withRelated: standardRelatedAll,
-        })
-        .catch(catchNotFound())
-        .then((part) =>
-          part.destroy({ require: true }))
-        .then(() => null)
+        return transact((tmix) =>
+          Part
+          .where('id', idMaybe)
+          .fetch({
+            ...tmix,
+            require: true,
+            withRelated: standardRelatedAll,
+          })
+          .catch(catchNotFound())
+          .then((part) =>
+            part.destroy({ ...tmix, require: true }))
+          .then(() => null))
       },
     },
   ],
