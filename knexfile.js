@@ -1,4 +1,8 @@
-// Update with your config settings.
+// Set up Babel (ES6) and app-module-path
+require('./app/setup')
+
+
+// Config
 
 module.exports = {
 

@@ -1,6 +1,6 @@
 
-exports.up = function (knex, Promise) {
-  return knex.schema.createTable('pvariation', function (table) {
+export function up(knex) {
+  return knex.schema.createTable('pvariation', (table) => {
     table.increments('id').primary()
     table.timestamps()
 
@@ -10,6 +10,6 @@ exports.up = function (knex, Promise) {
   })
 }
 
-exports.down = function (knex, Promise) {
+export function down(knex) {
   return knex.schema.dropTable('pvariation')
 }

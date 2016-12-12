@@ -1,6 +1,6 @@
 
-exports.up = function (knex, Promise) {
-  return knex.schema.createTable('comment', function (table) {
+export function up(knex) {
+  return knex.schema.createTable('comment', (table) => {
     table.increments('id').primary()
     table.text('content')
     table.enu('modstatus', ['non', 'approve', 'reject'])
@@ -16,6 +16,6 @@ exports.up = function (knex, Promise) {
   })
 }
 
-exports.down = function (knex, Promise) {
+export function down(knex) {
   return knex.schema.dropTable('comment')
 }

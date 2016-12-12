@@ -1,17 +1,17 @@
+import Promise from 'bluebird'
 
-exports.seed = function (knex, Promise) {
-  var tableName = 'role'
+
+export function seed(knex) {
+  const tableName = 'role'
 
   // Deletes ALL existing entries
   return knex(tableName).del()
-    .then(function () {
-      return Promise.all([
+    .then(() =>
+      Promise.all([
         { slug: 'user', name: 'User' },
         { slug: 'mod', name: 'Moderator' },
         { slug: 'admin', name: 'Admin' },
         { slug: 'super', name: 'Super-admin' },
-      ].map(function (fields) {
-        return knex(tableName).insert(fields)
-      }))
-    })
+      ].map((fields) =>
+        knex(tableName).insert(fields))))
 }

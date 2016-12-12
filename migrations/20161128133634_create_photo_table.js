@@ -1,6 +1,6 @@
 
-exports.up = function (knex, Promise) {
-  return knex.schema.createTable('photo', function (table) {
+export function up(knex) {
+  return knex.schema.createTable('photo', (table) => {
     table.increments('id').primary()
     table.string('s3key')
     table.text('description')
@@ -17,6 +17,6 @@ exports.up = function (knex, Promise) {
   })
 }
 
-exports.down = function (knex, Promise) {
+export function down(knex) {
   return knex.schema.dropTable('photo')
 }

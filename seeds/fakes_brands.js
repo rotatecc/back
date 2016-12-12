@@ -1,9 +1,12 @@
-exports.seed = function (knex, Promise) {
-  var tableName = 'brand'
+import Promise from 'bluebird'
+
+
+export function seed(knex) {
+  const tableName = 'brand'
 
   return knex(tableName).del()
-    .then(function () {
-      return Promise.all([
+    .then(() =>
+      Promise.all([
         '3T',
         'Absolute Black',
         'Acros',
@@ -68,10 +71,6 @@ exports.seed = function (knex, Promise) {
         'Wolf Tooth',
         'Xtracycle',
         'Zipp',
-      ].map(function (name) {
-        return knex(tableName).insert({
-          name: name,
-        })
-      }))
-    })
+      ].map((name) =>
+        knex(tableName).insert({ name }))))
 }

@@ -1,6 +1,6 @@
 
-exports.up = function (knex, Promise) {
-  return knex.schema.createTable('junction_btag_build', function (table) {
+export function up(knex) {
+  return knex.schema.createTable('junction_btag_build', (table) => {
     table.increments('id').primary()
     table.dateTime('date_added')
 
@@ -12,6 +12,6 @@ exports.up = function (knex, Promise) {
   })
 }
 
-exports.down = function (knex, Promise) {
+export function down(knex) {
   return knex.schema.dropTable('junction_btag_build')
 }

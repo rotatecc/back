@@ -1,15 +1,14 @@
-exports.seed = function (knex, Promise) {
-  var tableName = 'btag'
+import Promise from 'bluebird'
+
+
+export function seed(knex) {
+  const tableName = 'btag'
 
   return knex(tableName).del()
-    .then(function () {
-      return Promise.all([
+    .then(() =>
+      Promise.all([
         'Road',
         // TODO more
-      ].map(function (name) {
-        return knex(tableName).insert({
-          name: name,
-        })
-      }))
-    })
+      ].map((name) =>
+        knex(tableName).insert({ name }))))
 }
