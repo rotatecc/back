@@ -18,6 +18,7 @@ const endpoints = [
   'part',
   'build',
   'comment',
+  'photo',
 ]
 
 endpoints.forEach((endpoint) => {
