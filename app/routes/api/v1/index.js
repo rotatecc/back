@@ -17,6 +17,7 @@ const endpoints = [
   'ptype',
   'part',
   'build',
+  'comment',
 ]
 
 endpoints.forEach((endpoint) => {

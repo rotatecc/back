@@ -38,7 +38,7 @@ export default makeResource({
     {
       method: methods.GET,
       getType: 'paginate',
-      role: 'admin',
+      role: false,
       makeResponse({ req }) {
         return Build
         .query((q) => {
@@ -58,7 +58,7 @@ export default makeResource({
     {
       method: methods.GET,
       getType: 'single',
-      role: 'admin',
+      role: false,
       makeResponse({ idMaybe }) {
         return Build
         .where({ id: idMaybe })
