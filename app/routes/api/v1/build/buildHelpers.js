@@ -96,13 +96,13 @@ export function prepareBuildDependencies(build, body, tmix) {
         if (id) {
           // Try to find PVariation by id, then save the direct fields
           return BVariation
-          .where('id', id)
+          .where({ id, build_id: build.get('id') })
           .fetch({
             ...tmix,
             require: true,
             withRelated: ['pvariations'], // We'll load the BVariationType later
           })
-          .catch(catchNotFound(`BVariation with id ${id} not found`))
+          .catch(catchNotFound(`BVariation with id ${id} belonging to this Build was not found`))
           .then((bv) =>
             bv.save(fields, tmix))
           .then((bv) =>
@@ -111,7 +111,7 @@ export function prepareBuildDependencies(build, body, tmix) {
 
         // Otherwise, create new BVariation
         return BVariation
-        .forge(fields)
+        .forge({ ...fields, build_id: build.get('id') })
         .save(null, tmix)
         .then((bv) =>
           bv.load('bvariationtype', tmix))
