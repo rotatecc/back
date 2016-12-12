@@ -1,8 +1,10 @@
 import Joi from 'joi'
+import { stringNonTrivialTrimmed } from 'commonValidators'
+
 
 export default {
   email: Joi.string().email().required(),
-  display: Joi.string().trim().min(3).required(),
+  display: stringNonTrivialTrimmed.required(),
   password: Joi.string().min(7).required(),
 
   // Non-columns:

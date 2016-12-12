@@ -1,6 +1,6 @@
-import Joi from 'joi'
+import { stringNonTrivialTrimmed } from 'commonValidators'
 
 
 export default {
-  name: Joi.string().min(2).required(),
+  name: stringNonTrivialTrimmed.required(),
 }

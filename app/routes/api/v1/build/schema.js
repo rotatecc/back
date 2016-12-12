@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { stringNonTrivialTrimmed, stringAllowEmptyTrimmed, id } from 'commonValidators'
 
 
 /**
@@ -21,23 +22,19 @@ import Joi from 'joi'
  */
 
 
-const idSchema = Joi.number().positive().integer().required()
-
-const stringAllowEmptySchema = Joi.string().allow('')
-
 export default {
-  name: Joi.string().min(2).required(),
-  description: stringAllowEmptySchema.required(),
+  name: stringNonTrivialTrimmed.required(),
+  description: stringAllowEmptyTrimmed.required(),
 
   // belongsTo relations
-  account_id: idSchema,
+  account_id: id.required(),
 
   // Complex relations
-  btags: Joi.array().items(idSchema.optional()).required(),
+  btags: Joi.array().items(id.optional()).required(),
   bvariations: Joi.array().items(Joi.object().keys({
-    id: idSchema.optional(),
-    name: Joi.string().min(2).required(),
-    bvariationtype_id: idSchema,
-    pvariations: Joi.array().items(idSchema.optional()).required(),
+    id: id.optional(),
+    name: stringNonTrivialTrimmed.required(),
+    bvariationtype_id: id.required(),
+    pvariations: Joi.array().items(id.optional()).required(),
   }).optional()).required(),
 }

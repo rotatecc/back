@@ -1,6 +1,6 @@
-import Joi from 'joi'
+import { modStatus } from 'commonValidators'
 
 
 export default {
-  modstatus: Joi.string().valid('non', 'approve', 'reject').required(),
+  modstatus: modStatus.required(),
 }
