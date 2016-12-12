@@ -19,6 +19,7 @@ const endpoints = [
   'build',
   'comment',
   'photo',
+  'review',
 ]
 
 endpoints.forEach((endpoint) => {
