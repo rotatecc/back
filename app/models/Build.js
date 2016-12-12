@@ -11,25 +11,28 @@ export default bs.model('Build', bs.Model.extend({
   hasTimestamps: true,
 
   initialize() {
-    this.on('destroying', (build) => {
+    this.on('destroying', (build, { transacting }) => {
       // Destroy or detach related
+
+      const tmix = { transacting }
 
       const removeRelatedPromises = []
 
       // Detach BTags
       if (!build.related('btags').isEmpty()) {
-        removeRelatedPromises.push(build.btags().detach())
+        const btagDetachPromise = build.btags().detach(null, tmix)
+        removeRelatedPromises.push(btagDetachPromise)
       }
 
       // Destroy BVariations
       if (!build.related('bvariations').isEmpty()) {
-        const bvDestroyPromises = build.related('pvariations').map((bv) => bv.destroy())
+        const bvDestroyPromises = build.related('bvariations').map((bv) => bv.destroy(tmix))
         removeRelatedPromises.push(Promise.all(bvDestroyPromises))
       }
 
       // Destroy Comments
       if (!build.related('comments').isEmpty()) {
-        const commentDestroyPromises = build.related('comments').map((c) => c.destroy())
+        const commentDestroyPromises = build.related('comments').map((c) => c.destroy(tmix))
         removeRelatedPromises.push(Promise.all(commentDestroyPromises))
       }
 

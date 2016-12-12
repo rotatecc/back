@@ -13,31 +13,33 @@ export default bs.model('Part', bs.Model.extend({
   hasTimestamps: true,
 
   initialize() {
-    this.on('destroying', (part) => {
+    this.on('destroying', (part, { transacting }) => {
       // Destroy or detach related
+
+      const tmix = { transacting }
 
       const removeRelatedPromises = []
 
       // Detach Specs
       if (!part.related('specs').isEmpty()) {
-        removeRelatedPromises.push(part.specs().detach())
+        removeRelatedPromises.push(part.specs().detach(null, tmix))
       }
 
       // Destroy PVariations
       if (!part.related('pvariations').isEmpty()) {
-        const pvDestroyPromises = part.related('pvariations').map((pv) => pv.destroy())
+        const pvDestroyPromises = part.related('pvariations').map((pv) => pv.destroy(tmix))
         removeRelatedPromises.push(Promise.all(pvDestroyPromises))
       }
 
       // Destroy Comments
       if (!part.related('comments').isEmpty()) {
-        const commentDestroyPromises = part.related('comments').map((c) => c.destroy())
+        const commentDestroyPromises = part.related('comments').map((c) => c.destroy(tmix))
         removeRelatedPromises.push(Promise.all(commentDestroyPromises))
       }
 
       // Destroy Reviews
       if (!part.related('reviews').isEmpty()) {
-        const reviewDestroyPromises = part.related('reviews').map((c) => c.destroy())
+        const reviewDestroyPromises = part.related('reviews').map((c) => c.destroy(tmix))
         removeRelatedPromises.push(Promise.all(reviewDestroyPromises))
       }
 

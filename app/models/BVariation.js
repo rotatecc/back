@@ -11,17 +11,19 @@ export default bs.model('BVariation', bs.Model.extend({
   hasTimestamps: true,
 
   initialize() {
-    this.on('destroying', (bv) => {
+    this.on('destroying', (bv, { transacting }) => {
       // Destroy or detach related
+
+      const tmix = { transacting }
 
       const removeRelatedPromises = []
 
-      // Detach BVariations
-      removeRelatedPromises.push(bv.pvariations().detach())
+      // Detach PVariations
+      removeRelatedPromises.push(bv.pvariations().detach(null, tmix))
 
       // Destroy Photos
       if (!bv.related('photos').isEmpty()) {
-        const photoDestroyPromises = bv.related('photos').map((p) => p.destroy())
+        const photoDestroyPromises = bv.related('photos').map((p) => p.destroy(tmix))
         removeRelatedPromises.push(Promise.all(photoDestroyPromises))
       }
 
