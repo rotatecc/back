@@ -84,7 +84,7 @@ export default function makeResource({ endpoints }) {
         return Promise.resolve()
       })
       .then(() => {
-        // If this request has a body, validate it against a schema
+        // If this request has a body and a schema validator is specified, validate
 
         if (hasBody && ep.schema) {
           return validate(ep.schema, req.body)

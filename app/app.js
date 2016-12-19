@@ -9,6 +9,13 @@ const port = 3001
 // Create app
 const app = express()
 
+// Enable CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  next()
+})
+
 // Parse application/x-www-form-urlencoded
 // ('extended' will use the qs lib to parse json values and such)
 app.use(bodyParser.urlencoded({ extended: false }))
