@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { Review } from 'models'
@@ -37,7 +37,7 @@ export default makeResource({
           Review
           .where('id', idMaybe)
           .fetch(tmix)
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((review) =>
             review.save(bodyMaybe, tmix)))
       },

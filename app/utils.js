@@ -119,13 +119,22 @@ export function makeSingleOrReject(results) {
 }
 
 
-export function catchNotFound(message = null) {
-  return (err) => {
-    const error = (err instanceof Error && err.name === 'ApiError')
-      ? err // An ApiError was already thrown, so just forward it as a rejection
-      : makeApiError(404, message) // Assume it's a 404
+// Determine if err is a connection error
+export function isConnError(err) {
+  return err && err.code === 'ECONNREFUSED'
+}
 
-    return Promise.reject(error)
+
+export function catchNotFoundOrConnError(message = null) {
+  return (err) => {
+    // An ApiError was already thrown, so just forward it as a rejection
+    if (err instanceof Error && err.name === 'ApiError') {
+      return Promise.reject(err)
+    }
+
+    const [aeCode, aeMessage] = isConnError(err) ? [500, null] : [404, message]
+
+    return Promise.reject(makeApiError(aeCode, aeMessage))
   }
 }
 
@@ -185,7 +194,7 @@ export function authenticate(email, password) {
     algorithm: 'HS256', // TODO replace with RS256 + .pem file
   }
 
-  const badAccountError = makeApiError(401, 'Bad email or password')
+  const badAccountError = makeApiError(400, 'Bad email or password')
 
   // Find account
 
@@ -198,12 +207,12 @@ export function authenticate(email, password) {
   // 404 errors would reveal the account doesn't exist,
   // but we want to be ambiguous and give the
   // same error as giving a bad password:
-  .catch(() => Promise.reject(badAccountError))
+  .catch((err) => Promise.reject(isConnError(err) ? makeApiError(500) : badAccountError))
   .then((account) => {
     // Check account status === okay
 
-    if (account.status.slug !== 'okay') {
-      return Promise.reject(makeApiError(403, 'You are bannedd'))
+    if (account.related('status').get('slug') !== 'okay') {
+      return Promise.reject(makeApiError(403, 'You are banned'))
     }
 
     return account
@@ -286,25 +295,23 @@ export function verifyAuthAndRole(req, minRole = true) {
       if (err) {
         if (err.name === 'TokenExpiredError') {
           reject(makeApiError(440, 'Auth token expired'))
+        } else {
+          // This is a JsonWebTokenError (jwt malformed, bad signature, etc)
+          reject(makeApiError(401, err.message))
         }
-
-        // This is a JsonWebTokenError (jwt malformed, bad signature, etc)
-        reject(makeApiError(401, err.message))
-      }
-
       // JWT is good, now for the role...
-      if (!roleMeetsRequirement(decoded.roleSlug, minRole)) {
+      } else if (!roleMeetsRequirement(decoded.roleSlug, minRole)) {
         // Send 403 forbidden (authenticated, but forbidden)
         reject(makeApiError(403))
+      } else {
+        // All set!
+
+        // Mutate req by setting currentAccount
+        req.currentAccount = decoded // eslint-disable-line no-param-reassign
+
+        // Resolve
+        resolve(decoded)
       }
-
-      // All set!
-
-      // Mutate req by setting currentAccount
-      req.currentAccount = decoded // eslint-disable-line no-param-reassign
-
-      // Resolve
-      resolve(decoded)
     })
   })
 }

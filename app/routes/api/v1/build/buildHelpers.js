@@ -1,7 +1,7 @@
 import Promise from 'bluebird'
 
 import { BVariation, BTag, BVariationType, PVariation } from 'models'
-import { catchNotFound } from 'utils'
+import { catchNotFoundOrConnError } from 'utils'
 
 
 export function removeOldBVariations(build, bvariations, tmix) {
@@ -33,7 +33,7 @@ export function syncBTags(build, btagIds, tmix) {
   return Promise.all(toAttach.map((id) =>
     BTag.where('id', id)
     .fetch({ ...tmix, require: true })
-    .catch(catchNotFound(`BTag with id ${id} not found`))))
+    .catch(catchNotFoundOrConnError(`BTag with id ${id} not found`))))
   .then(() =>
     Promise.all([
       build.btags().detach(toDetach, tmix),
@@ -57,7 +57,7 @@ export function syncPVariations(bvariation, pvariationIds, tmix) {
   return Promise.all(toAttach.map((id) =>
     PVariation.where('id', id)
     .fetch({ ...tmix, require: true })
-    .catch(catchNotFound(`PVariation with id ${id} not found`))))
+    .catch(catchNotFoundOrConnError(`PVariation with id ${id} not found`))))
   .then(() =>
     Promise.all([
       bvariation.pvariations().detach(toDetach, tmix),
@@ -84,7 +84,7 @@ export function prepareBuildDependencies(build, body, tmix) {
       BVariationType
       .where('id', bvariationtype_id)
       .fetch(tmix)
-      .catch(catchNotFound(`BVariationType with id ${bvariationtype_id} not found`))
+      .catch(catchNotFoundOrConnError(`BVariationType with id ${bvariationtype_id} not found`))
       // Find or create BVariation
       .then((bvariationtype) => {
         const fields = {
@@ -102,7 +102,7 @@ export function prepareBuildDependencies(build, body, tmix) {
             require: true,
             withRelated: ['pvariations'], // We'll load the BVariationType later
           })
-          .catch(catchNotFound(`BVariation with id ${id} belonging to this Build was not found`))
+          .catch(catchNotFoundOrConnError(`BVariation with id ${id} belonging to this Build was not found`))
           .then((bv) =>
             bv.save(fields, tmix))
           .then((bv) =>

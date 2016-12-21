@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import makeResource, { methods } from 'resource'
-import { authenticate, makeApiError, hash, catchNotFound, makeOwnershipVerifier } from 'utils'
+import { authenticate, makeApiError, hash, catchNotFoundOrConnError, makeOwnershipVerifier } from 'utils'
 import { transact } from 'db'
 
 import { Account, Role, Status } from 'models'
@@ -82,7 +82,7 @@ export default makeResource({
           Account
           .where('id', idMaybe)
           .fetch({ ...tmix, require: true })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then(makeOwnershipVerifier(req, (r) => r.get('id')))
           .then((account) =>
             account.save(bodyMaybe, tmix)))
@@ -110,7 +110,7 @@ export default makeResource({
             require: true,
             withRelated: ['role', 'status'],
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then(makeOwnershipVerifier(req, (r) => r.get('id')))
           .then((account) =>
             // Set new hashed password (see prepareBody above)

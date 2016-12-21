@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { makeApiError, preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { BTag } from 'models'
@@ -92,7 +92,7 @@ export default makeResource({
               require: true,
               withRelated: [],
             }))
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((btag) =>
             btag.save(bodyMaybe, tmix)))
       },
@@ -110,7 +110,7 @@ export default makeResource({
             require: true,
             withRelated: ['builds'],
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((btag) => {
             if (!btag.related('builds').isEmpty()) {
               return Promise.reject(makeApiError(400, 'Cannot delete, btag has dependent builds'))

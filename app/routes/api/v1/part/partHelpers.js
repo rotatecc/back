@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Promise from 'bluebird'
 
 import { Brand, PType, PVariation, Spec } from 'models'
-import { catchNotFound, makeApiError } from 'utils'
+import { catchNotFoundOrConnError, makeApiError } from 'utils'
 
 
 // Verify existence of PType and Brand, throw a 404 ApiError if not
@@ -13,11 +13,11 @@ export function verifyDirectPartRelationsExist(body, tmix) {
     PType
       .where('id', ptype_id)
       .fetch({ ...tmix, require: true })
-      .catch(catchNotFound('PType not found')),
+      .catch(catchNotFoundOrConnError('PType not found')),
     Brand
       .where('id', brand_id)
       .fetch({ ...tmix, require: true })
-      .catch(catchNotFound('Brand not found')),
+      .catch(catchNotFoundOrConnError('Brand not found')),
   ])
   .then(() => null)
 }
@@ -33,7 +33,7 @@ export function findOrCreateSpecs(specs, tmix) {
       return Spec
       .where('id', id)
       .fetch({ ...tmix, require: true })
-      .catch(catchNotFound(`Spec with id ${id} not found`))
+      .catch(catchNotFoundOrConnError(`Spec with id ${id} not found`))
       .then((spec) =>
         ({ spec, value }))
     } else if (name) {
@@ -184,7 +184,7 @@ export function preparePartDependencies(part, body, tmix) {
             require: true,
             withRelated: ['specs'],
           })
-          .catch(catchNotFound(`PVariation with id ${id} not found`))
+          .catch(catchNotFoundOrConnError(`PVariation with id ${id} not found`))
         }
 
         // Otherwise, create new PVariation

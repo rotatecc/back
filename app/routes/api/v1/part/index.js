@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { Part } from 'models'
@@ -106,7 +106,7 @@ export default makeResource({
               require: true,
               withRelated: standardRelated,
             })
-            .catch(catchNotFound()))
+            .catch(catchNotFoundOrConnError()))
           .then((part) =>
             // Update the regular ol fields on the row
             part.save(_.omit(bodyMaybe, ['specs', 'pvariations']), tmix))
@@ -132,7 +132,7 @@ export default makeResource({
             require: true,
             withRelated: standardRelatedAll,
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((part) =>
             part.destroy({ ...tmix, require: true }))
           .then(() => null))

@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { Build } from 'models'
@@ -101,7 +101,7 @@ export default makeResource({
             require: true,
             withRelated: standardRelated,
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((build) =>
             build.save(_.omit(bodyMaybe, ['btags', 'bvariations']), tmix))
           .then((build) =>
@@ -125,7 +125,7 @@ export default makeResource({
             require: true,
             withRelated: standardRelatedAll,
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((build) =>
             build.destroy({ ...tmix, require: true }))
           .then(() => null))

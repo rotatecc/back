@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { preparePaginatedResult, catchNotFound } from 'utils'
+import { preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { Comment } from 'models'
@@ -37,7 +37,7 @@ export default makeResource({
           Comment
           .where('id', idMaybe)
           .fetch(tmix)
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((comment) =>
             comment.save(bodyMaybe, tmix)))
       },

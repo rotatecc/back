@@ -1,7 +1,7 @@
 import Promise from 'bluebird'
 
 import { Account, Status } from 'models'
-import { catchNotFound, makeApiError } from 'utils'
+import { catchNotFoundOrConnError, makeApiError } from 'utils'
 
 
 export function setAccountStatus(userId, isBanned, tmix) {
@@ -20,7 +20,7 @@ export function setAccountStatus(userId, isBanned, tmix) {
       withRelated: ['role', 'status'],
     }),
   ])
-  .catch(catchNotFound())
+  .catch(catchNotFoundOrConnError())
   .spread((status, account) => {
     if (account.related('role').get('slug') === 'super') {
       return Promise.reject(makeApiError(400, 'Cannot set status of super-admin'))

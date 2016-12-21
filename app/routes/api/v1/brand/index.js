@@ -1,6 +1,6 @@
 import config from 'config'
 import makeResource, { methods } from 'resource'
-import { makeApiError, preparePaginatedResult, catchNotFound } from 'utils'
+import { makeApiError, preparePaginatedResult, catchNotFoundOrConnError } from 'utils'
 import { transact } from 'db'
 
 import { Brand } from 'models'
@@ -92,7 +92,7 @@ export default makeResource({
               require: true,
               withRelated: [],
             }))
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((brand) =>
             brand.save(bodyMaybe, tmix)))
       },
@@ -110,7 +110,7 @@ export default makeResource({
             require: true,
             withRelated: ['parts'],
           })
-          .catch(catchNotFound())
+          .catch(catchNotFoundOrConnError())
           .then((brand) => {
             if (!brand.related('parts').isEmpty()) {
               return Promise.reject(makeApiError(400, 'Cannot delete, brand has dependent parts'))
