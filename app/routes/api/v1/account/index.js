@@ -38,7 +38,7 @@ export default makeResource({
     {
       method: methods.GET,
       getType: 'single',
-      role: false,
+      role: 'super',
       makeResponse({ idMaybe }) {
         return Account
         .where({ id: idMaybe })

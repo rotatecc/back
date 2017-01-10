@@ -74,6 +74,20 @@ export default makeResource({
     },
 
     {
+      method: methods.GET,
+      role: 'user',
+      makeResponse({ req }) {
+        return Account
+        .where({ id: req.currentAccount.id })
+        .fetch({
+          require: true,
+          withRelated: ['role', 'status'],
+        })
+        .catch(catchNotFoundOrConnError())
+      },
+    },
+
+    {
       method: methods.PATCH,
       role: 'user',
       schema: _.pick(schema, ['email', 'display']),
